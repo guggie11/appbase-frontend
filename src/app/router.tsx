@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { useAuthStore } from '@/features/auth/store'
+import { usePermission } from '@/features/auth/usePermission'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -17,6 +18,18 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />
   }
 
+  return <>{children}</>
+}
+
+function PermissionRoute({
+  children,
+  permission,
+}: {
+  children: React.ReactNode
+  permission: string
+}) {
+  const allowed = usePermission(permission)
+  if (!allowed) return <Navigate to="/forbidden" replace />
   return <>{children}</>
 }
 
@@ -54,6 +67,13 @@ export const router = createBrowserRouter([
     },
   },
   {
+    path: '/forbidden',
+    lazy: async () => {
+      const { ForbiddenPage } = await import('../pages/forbidden')
+      return { Component: ForbiddenPage }
+    },
+  },
+  {
     path: '/dashboard',
     lazy: async () => {
       const { DashboardPage } = await import('../pages/dashboard')
@@ -61,6 +81,36 @@ export const router = createBrowserRouter([
         Component: () => (
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        ),
+      }
+    },
+  },
+  {
+    path: '/users',
+    lazy: async () => {
+      const { UsersPage } = await import('../pages/users')
+      return {
+        Component: () => (
+          <ProtectedRoute>
+            <PermissionRoute permission="users.read">
+              <UsersPage />
+            </PermissionRoute>
+          </ProtectedRoute>
+        ),
+      }
+    },
+  },
+  {
+    path: '/roles',
+    lazy: async () => {
+      const { RolesPage } = await import('../pages/roles')
+      return {
+        Component: () => (
+          <ProtectedRoute>
+            <PermissionRoute permission="roles.read">
+              <RolesPage />
+            </PermissionRoute>
           </ProtectedRoute>
         ),
       }
