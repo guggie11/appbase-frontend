@@ -16,12 +16,17 @@ export default defineConfig({
   build: {
     rollupOptions: {
       // framer-motion 12.x has a known issue with Rolldown/Vite 8
-      // treat it as external to avoid missing-export build errors,
-      // but only if you want to exclude it. Here we workaround via
-      // onwarn silence — the actual import is already removed.
+      // It is not imported directly — kept as a dependency for future use.
     },
   },
   optimizeDeps: {
-    include: ['framer-motion'],
+    // Exclude framer-motion from pre-bundling to avoid Rolldown compat errors
+    exclude: ['framer-motion'],
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
+    exclude: ['e2e/**', 'node_modules/**'],
   },
 })
