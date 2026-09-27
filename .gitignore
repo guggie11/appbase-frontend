@@ -42,3 +42,4 @@ node_modules
 # Generated API
 src/shared/api/generated/**
 !src/shared/api/generated/.gitkeep
+test-results/
