@@ -99,3 +99,44 @@ export interface LoginActivity {
   success_count: number
   failed_count: number
 }
+
+export interface Profile {
+  id: string
+  name: string
+  email: string
+  avatar: string | null
+  status: string
+  is_verified: boolean
+  last_login_at: string | null
+  created_at: string
+}
+
+export interface Session {
+  id: string
+  ip_address: string | null
+  user_agent: string | null
+  created_at: string
+  expires_at: string
+  is_current: boolean
+}
+
+export interface AuditLog {
+  id: string
+  user_id: string | null
+  user_name: string | null
+  action: string
+  module: string
+  entity_id: string | null
+  ip_address: string | null
+  request_id: string | null
+  created_at: string
+}
+
+export interface Setting {
+  id: string
+  key: string
+  value: string | null
+  type: string
+  is_public: boolean
+  is_secret: boolean
+}
