@@ -31,3 +31,38 @@ export interface TokenData {
   token_type: string
   user: User
 }
+
+export interface Role {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  is_system: boolean
+  is_active: boolean
+}
+
+export interface Permission {
+  id: string
+  name: string
+  slug: string
+  module: string
+  action: string
+}
+
+export interface UserWithRoles extends User {
+  roles: Role[]
+  avatar: string | null
+  is_verified: boolean
+  last_login_at: string | null
+  created_at: string
+}
+
+export interface PaginatedResponse<T> {
+  data: T[]
+  meta: {
+    page: number
+    per_page: number
+    total: number
+    total_pages: number
+  }
+}
