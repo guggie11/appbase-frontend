@@ -1,0 +1,44 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Build output
+dist
+dist-ssr
+
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Vite
+*.local
+.vite
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Generated API
+src/shared/api/generated/**
+!src/shared/api/generated/.gitkeep

@@ -1,0 +1,3 @@
+// Orval-generated API client goes here.
+// Run `pnpm orval` to regenerate after openapi.json changes.
+export {}
