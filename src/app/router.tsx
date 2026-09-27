@@ -139,6 +139,49 @@ export const router = createBrowserRouter([
     },
   },
   {
+    path: '/profile',
+    lazy: async () => {
+      const { ProfilePage } = await import('../pages/profile')
+      return {
+        Component: () => (
+          <WithLayout>
+            <ProfilePage />
+          </WithLayout>
+        ),
+      }
+    },
+  },
+  {
+    path: '/audit-logs',
+    lazy: async () => {
+      const { AuditLogsPage } = await import('../pages/audit-logs')
+      return {
+        Component: () => (
+          <WithLayout>
+            <PermissionRoute permission="audit.read">
+              <AuditLogsPage />
+            </PermissionRoute>
+          </WithLayout>
+        ),
+      }
+    },
+  },
+  {
+    path: '/settings',
+    lazy: async () => {
+      const { SettingsPage } = await import('../pages/settings')
+      return {
+        Component: () => (
+          <WithLayout>
+            <PermissionRoute permission="settings.read">
+              <SettingsPage />
+            </PermissionRoute>
+          </WithLayout>
+        ),
+      }
+    },
+  },
+  {
     path: '*',
     lazy: async () => {
       const { NotFoundPage } = await import('../pages/not-found')
