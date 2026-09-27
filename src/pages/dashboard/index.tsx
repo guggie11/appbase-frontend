@@ -1,63 +1,220 @@
-import { Link } from 'react-router-dom'
-import { useNavigate } from 'react-router-dom'
-import { useAuthStore } from '@/features/auth/store'
-import { useLogout } from '@/features/auth/queries'
-import { Loader2, Users, Shield } from 'lucide-react'
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts'
+import { Users, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { useDashboardStats, useLoginActivity } from '@/features/dashboard/queries'
 
-export function DashboardPage() {
-  const navigate = useNavigate()
-  const user = useAuthStore((s) => s.user)
-  const logout = useLogout()
+// ── Stat Card ──────────────────────────────────────────────────────────────
 
-  const handleLogout = async () => {
-    await logout.mutateAsync()
-    void navigate('/login')
+interface StatCardProps {
+  label: string
+  value: number | undefined
+  icon: React.ReactNode
+  color: 'green' | 'yellow' | 'red' | 'blue'
+  loading?: boolean
+}
+
+const colorMap = {
+  green: {
+    bg: 'bg-green-50',
+    icon: 'bg-green-100 text-green-600',
+    text: 'text-green-700',
+    bar: 'bg-green-400',
+  },
+  yellow: {
+    bg: 'bg-yellow-50',
+    icon: 'bg-yellow-100 text-yellow-600',
+    text: 'text-yellow-700',
+    bar: 'bg-yellow-400',
+  },
+  red: {
+    bg: 'bg-red-50',
+    icon: 'bg-red-100 text-red-600',
+    text: 'text-red-700',
+    bar: 'bg-red-400',
+  },
+  blue: {
+    bg: 'bg-blue-50',
+    icon: 'bg-blue-100 text-blue-600',
+    text: 'text-blue-700',
+    bar: 'bg-blue-400',
+  },
+}
+
+function StatCard({ label, value, icon, color, loading }: StatCardProps) {
+  const c = colorMap[color]
+
+  if (loading) {
+    return (
+      <div className="rounded-xl border bg-white p-5 shadow-sm animate-pulse">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-full bg-slate-200" />
+          <div className="flex-1 space-y-2">
+            <div className="h-3 w-24 rounded bg-slate-200" />
+            <div className="h-6 w-16 rounded bg-slate-200" />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-8 text-center space-y-4">
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            Hello, {user?.name ?? 'User'}!
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{user?.email}</p>
-          <button
-            onClick={handleLogout}
-            disabled={logout.isPending}
-            className="inline-flex items-center gap-2 rounded-lg bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white font-medium px-5 py-2.5 text-sm transition-colors"
-          >
-            {logout.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            Logout
-          </button>
+    <div className={`rounded-xl border bg-white p-5 shadow-sm ${c.bg} border-transparent`}>
+      <div className="flex items-center gap-4">
+        <div className={`h-12 w-12 rounded-full flex items-center justify-center ${c.icon}`}>
+          {icon}
+        </div>
+        <div>
+          <p className="text-sm text-slate-500">{label}</p>
+          <p className={`text-2xl font-bold stat-count ${c.text}`}>{value ?? 0}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Chart Skeleton ─────────────────────────────────────────────────────────
+
+function ChartSkeleton() {
+  return (
+    <div className="h-64 rounded-xl bg-slate-100 animate-pulse" />
+  )
+}
+
+// ── Dashboard Page ─────────────────────────────────────────────────────────
+
+export function DashboardPage() {
+  const { data: stats, isLoading: statsLoading } = useDashboardStats()
+  const { data: activity, isLoading: activityLoading } = useLoginActivity()
+
+  // Bar chart data: user status breakdown
+  const barData = stats
+    ? [
+        { name: 'Active', value: stats.users.active, fill: '#22c55e' },
+        { name: 'Pending', value: stats.users.pending, fill: '#eab308' },
+        { name: 'Inactive', value: stats.users.inactive, fill: '#94a3b8' },
+        { name: 'Suspended', value: stats.users.suspended, fill: '#ef4444' },
+      ]
+    : []
+
+  // Line chart: last 30 days login activity
+  const lineData = (activity ?? []).map((d) => ({
+    date: d.date.slice(5), // MM-DD
+    Success: d.success_count,
+    Failed: d.failed_count,
+  }))
+
+  return (
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+        <p className="text-slate-500 text-sm mt-1">Platform overview & login activity</p>
+      </div>
+
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          label="Active Users"
+          value={stats?.users.active}
+          icon={<Users size={20} />}
+          color="green"
+          loading={statsLoading}
+        />
+        <StatCard
+          label="Pending Users"
+          value={stats?.users.pending}
+          icon={<Clock size={20} />}
+          color="yellow"
+          loading={statsLoading}
+        />
+        <StatCard
+          label="Suspended Users"
+          value={stats?.users.suspended}
+          icon={<AlertTriangle size={20} />}
+          color="red"
+          loading={statsLoading}
+        />
+        <StatCard
+          label="Logins Today"
+          value={stats?.today.login_success}
+          icon={<CheckCircle2 size={20} />}
+          color="blue"
+          loading={statsLoading}
+        />
+      </div>
+
+      {/* Charts row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Line Chart: Login Activity */}
+        <div className="rounded-xl border bg-white p-5 shadow-sm">
+          <h2 className="text-base font-semibold text-slate-800 mb-4">
+            Login Activity (30 days)
+          </h2>
+          {activityLoading ? (
+            <ChartSkeleton />
+          ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <LineChart data={lineData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 11 }}
+                  interval="preserveStartEnd"
+                />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="Success"
+                  stroke="#22c55e"
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Failed"
+                  stroke="#ef4444"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Link
-            to="/users"
-            className="flex items-center gap-4 p-5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-sm transition-all group"
-          >
-            <div className="h-10 w-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-              <Users className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="font-semibold text-gray-900 dark:text-white">User Management</h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Manage users and their roles</p>
-            </div>
-          </Link>
-
-          <Link
-            to="/roles"
-            className="flex items-center gap-4 p-5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-sm transition-all group"
-          >
-            <div className="h-10 w-10 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-600 dark:text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-              <Shield className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="font-semibold text-gray-900 dark:text-white">Roles & Permissions</h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Manage roles and permission matrix</p>
-            </div>
-          </Link>
+        {/* Bar Chart: User Status */}
+        <div className="rounded-xl border bg-white p-5 shadow-sm">
+          <h2 className="text-base font-semibold text-slate-800 mb-4">
+            Users by Status
+          </h2>
+          {statsLoading ? (
+            <ChartSkeleton />
+          ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={barData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  {barData.map((entry, index) => (
+                    <rect key={index} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { useAuthStore } from '@/features/auth/store'
 import { usePermission } from '@/features/auth/usePermission'
+import { AppLayout } from '@/shared/ui/AppLayout'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -31,6 +32,14 @@ function PermissionRoute({
   const allowed = usePermission(permission)
   if (!allowed) return <Navigate to="/forbidden" replace />
   return <>{children}</>
+}
+
+function WithLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <ProtectedRoute>
+      <AppLayout>{children}</AppLayout>
+    </ProtectedRoute>
+  )
 }
 
 export const router = createBrowserRouter([
@@ -79,9 +88,9 @@ export const router = createBrowserRouter([
       const { DashboardPage } = await import('../pages/dashboard')
       return {
         Component: () => (
-          <ProtectedRoute>
+          <WithLayout>
             <DashboardPage />
-          </ProtectedRoute>
+          </WithLayout>
         ),
       }
     },
@@ -92,11 +101,11 @@ export const router = createBrowserRouter([
       const { UsersPage } = await import('../pages/users')
       return {
         Component: () => (
-          <ProtectedRoute>
+          <WithLayout>
             <PermissionRoute permission="users.read">
               <UsersPage />
             </PermissionRoute>
-          </ProtectedRoute>
+          </WithLayout>
         ),
       }
     },
@@ -107,11 +116,24 @@ export const router = createBrowserRouter([
       const { RolesPage } = await import('../pages/roles')
       return {
         Component: () => (
-          <ProtectedRoute>
+          <WithLayout>
             <PermissionRoute permission="roles.read">
               <RolesPage />
             </PermissionRoute>
-          </ProtectedRoute>
+          </WithLayout>
+        ),
+      }
+    },
+  },
+  {
+    path: '/menus',
+    lazy: async () => {
+      const { MenusPage } = await import('../pages/menus')
+      return {
+        Component: () => (
+          <WithLayout>
+            <MenusPage />
+          </WithLayout>
         ),
       }
     },
