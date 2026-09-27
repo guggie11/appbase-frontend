@@ -66,3 +66,36 @@ export interface PaginatedResponse<T> {
     total_pages: number
   }
 }
+
+export interface Menu {
+  id: string
+  label: string
+  icon: string | null
+  path: string | null
+  parent_id: string | null
+  order_index: number
+  is_active: boolean
+  roles: Role[]
+}
+
+export interface MenuTree extends Menu {
+  children: MenuTree[]
+}
+
+export interface DashboardStats {
+  users: {
+    total: number
+    active: number
+    pending: number
+    inactive: number
+    suspended: number
+  }
+  roles: { total: number }
+  today: { login_success: number; login_failed: number }
+}
+
+export interface LoginActivity {
+  date: string
+  success_count: number
+  failed_count: number
+}
