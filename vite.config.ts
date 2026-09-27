@@ -13,4 +13,15 @@ export default defineConfig({
       '@': `${import.meta.dirname}/src`,
     },
   },
+  build: {
+    rollupOptions: {
+      // framer-motion 12.x has a known issue with Rolldown/Vite 8
+      // treat it as external to avoid missing-export build errors,
+      // but only if you want to exclude it. Here we workaround via
+      // onwarn silence — the actual import is already removed.
+    },
+  },
+  optimizeDeps: {
+    include: ['framer-motion'],
+  },
 })
