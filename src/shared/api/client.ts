@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { type AxiosRequestConfig } from 'axios'
 import { useAuthStore } from '@/features/auth/store'
 
 const BASE_URL =
@@ -115,3 +115,8 @@ apiClient.interceptors.response.use(
     return Promise.reject(error)
   },
 )
+
+// Orval mutator: wraps apiClient as a callable function
+export function apiClientMutator<T>(config: AxiosRequestConfig): Promise<T> {
+  return apiClient(config).then((res) => res.data)
+}

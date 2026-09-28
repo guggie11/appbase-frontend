@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "vitest run",
+    "gen:api": "orval",
     "orval": "orval",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
