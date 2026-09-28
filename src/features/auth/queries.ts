@@ -52,6 +52,14 @@ export function useResetPassword() {
   })
 }
 
+// POST /auth/register
+export function useRegister() {
+  return useMutation({
+    mutationFn: (data: { name: string; email: string; password: string }) =>
+      apiClient.post('/auth/register', data).then((r) => r.data),
+  })
+}
+
 // GET /auth/verify-email?token=TOKEN
 export function useVerifyEmail() {
   return useMutation({

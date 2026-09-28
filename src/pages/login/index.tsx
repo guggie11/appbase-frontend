@@ -217,6 +217,16 @@ export function LoginPage() {
               Lupa password?
             </Link>
           </div>
+
+          <p style={{ textAlign: 'center', fontSize: 13, color: '#6B7280', marginTop: 16 }}>
+            Don&apos;t have an account?{' '}
+            <Link
+              to="/register"
+              style={{ color: '#D94F3D', fontWeight: 500, textDecoration: 'none' }}
+            >
+              Sign up
+            </Link>
+          </p>
         </div>
       </div>
     </div>
