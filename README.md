@@ -1,3 +1,5 @@
+[![CI](https://github.com/guggie11/appbase-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/guggie11/appbase-frontend/actions/workflows/ci.yml)
+
 # Appbase Frontend
 
 React 19 + TypeScript + Vite + Tailwind CSS v4 frontend skeleton using Feature-Sliced Design (FSD).
