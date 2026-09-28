@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Download } from 'lucide-react'
+import type { ColumnDef } from '@tanstack/react-table'
 import { useAuditLogs, type AuditLogFilters } from '@/features/audit-logs/queries'
 import type { AuditLog } from '@/shared/api/types'
+import { DataTable } from '@/shared/ui/DataTable'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -71,6 +73,72 @@ export function AuditLogsPage() {
 
   const MODULE_OPTIONS = ['', 'auth', 'users', 'roles', 'permissions', 'menus', 'settings', 'audit']
 
+  const columns = useMemo<ColumnDef<AuditLog, unknown>[]>(
+    () => [
+      {
+        id: 'user',
+        header: 'User',
+        cell: ({ row }) => (
+          <span style={{ fontWeight: 500 }}>{row.original.user_name ?? '—'}</span>
+        ),
+      },
+      {
+        accessorKey: 'action',
+        header: 'Action',
+        cell: ({ getValue }) => {
+          const action = getValue() as string
+          return (
+            <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 10px', borderRadius: 9999, fontSize: 11, fontWeight: 500, ...actionBadgeStyle(action) }}>
+              {action}
+            </span>
+          )
+        },
+      },
+      {
+        accessorKey: 'module',
+        header: 'Module',
+        cell: ({ getValue }) => (
+          <span style={{ color: '#6B7280' }}>{getValue() as string}</span>
+        ),
+      },
+      {
+        id: 'entity_id',
+        header: 'Entity ID',
+        cell: ({ row }) => (
+          <span style={{ color: '#6B7280', fontFamily: 'monospace', fontSize: 12 }}>
+            {truncate(row.original.entity_id, 12)}
+          </span>
+        ),
+      },
+      {
+        id: 'ip',
+        header: 'IP',
+        cell: ({ row }) => (
+          <span style={{ color: '#6B7280' }}>{row.original.ip_address ?? '—'}</span>
+        ),
+      },
+      {
+        id: 'request_id',
+        header: 'Request ID',
+        cell: ({ row }) => (
+          <span style={{ color: '#6B7280', fontFamily: 'monospace', fontSize: 12 }} title={row.original.request_id ?? ''}>
+            {truncate(row.original.request_id, 16)}
+          </span>
+        ),
+      },
+      {
+        id: 'created_at',
+        header: 'Created At',
+        cell: ({ row }) => (
+          <span style={{ color: '#9CA3AF', whiteSpace: 'nowrap', fontSize: 12 }}>
+            {new Date(row.original.created_at).toLocaleString()}
+          </span>
+        ),
+      },
+    ],
+    [],
+  )
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Header */}
@@ -128,51 +196,13 @@ export function AuditLogsPage() {
         </div>
       </div>
 
-      {/* Table */}
-      <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-        {isLoading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}>
-            <div className="spinner" />
-          </div>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="archie-table" style={{ minWidth: '100%' }}>
-              <thead>
-                <tr>
-                  {['User', 'Action', 'Module', 'Entity ID', 'IP', 'Request ID', 'Created At'].map((h) => (
-                    <th key={h}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} style={{ padding: '48px 16px', textAlign: 'center', color: '#9CA3AF' }}>
-                      No audit logs found.
-                    </td>
-                  </tr>
-                ) : (
-                  rows.map((log) => (
-                    <tr key={log.id}>
-                      <td style={{ fontWeight: 500 }}>{log.user_name ?? '—'}</td>
-                      <td>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 10px', borderRadius: 9999, fontSize: 11, fontWeight: 500, ...actionBadgeStyle(log.action) }}>
-                          {log.action}
-                        </span>
-                      </td>
-                      <td style={{ color: '#6B7280' }}>{log.module}</td>
-                      <td style={{ color: '#6B7280', fontFamily: 'monospace', fontSize: 12 }}>{truncate(log.entity_id, 12)}</td>
-                      <td style={{ color: '#6B7280' }}>{log.ip_address ?? '—'}</td>
-                      <td style={{ color: '#6B7280', fontFamily: 'monospace', fontSize: 12 }} title={log.request_id ?? ''}>{truncate(log.request_id, 16)}</td>
-                      <td style={{ color: '#9CA3AF', whiteSpace: 'nowrap', fontSize: 12 }}>{new Date(log.created_at).toLocaleString()}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      {/* DataTable */}
+      <DataTable
+        data={rows}
+        columns={columns}
+        isLoading={isLoading}
+        emptyMessage="No audit logs found."
+      />
 
       {/* Pagination */}
       {meta && meta.total_pages > 1 && (

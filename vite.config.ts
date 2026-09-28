@@ -3,6 +3,9 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
+// NOTE: @vitejs/plugin-react-oxc is deprecated as of v0.4.3 — its OXC transforms
+// are now included directly in @vitejs/plugin-react (v6+). The migration from
+// @vitejs/plugin-react to OXC-based transforms is complete via the standard plugin.
 export default defineConfig({
   plugins: [
     react(),
@@ -14,17 +17,10 @@ export default defineConfig({
     },
   },
   build: {
-    rollupOptions: {
-      // framer-motion 12.x has a known issue with Rolldown/Vite 8
-      // It is not imported directly — kept as a dependency for future use.
-    },
-  },
-  optimizeDeps: {
-    // Exclude framer-motion from pre-bundling to avoid Rolldown compat errors
-    exclude: ['framer-motion'],
+    rollupOptions: {},
   },
   server: {
-    allowedHosts: ['canned-cosmic-snide.ngrok-free.dev'],
+    allowedHosts: ['canned-cosmic-snide.ngrok-free.dev', '100.126.234.0', 'all'],
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
@@ -37,5 +33,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     exclude: ['e2e/**', 'node_modules/**'],
+    alias: {
+      'framer-motion': `${import.meta.dirname}/src/test/mocks/framer-motion.tsx`,
+    },
   },
 })

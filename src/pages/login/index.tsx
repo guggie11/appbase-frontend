@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Link, useNavigate } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useLogin } from '@/features/auth/queries'
 import type { ApiErrorBody } from '@/shared/api/types'
 import axios from 'axios'
@@ -113,7 +114,10 @@ export function LoginPage() {
           padding: '32px 24px',
         }}
       >
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
           style={{
             width: '100%',
             maxWidth: 400,
@@ -227,7 +231,7 @@ export function LoginPage() {
               Sign up
             </Link>
           </p>
-        </div>
+        </motion.div>
       </div>
     </div>
   )
