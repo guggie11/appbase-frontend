@@ -1,22 +1,12 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, Shield, Settings } from 'lucide-react'
+import type { ColumnDef } from '@tanstack/react-table'
 import type { Role } from '@/shared/api/types'
 import { useRoles, useDeleteRole, useUpdateRole } from '@/features/roles/queries'
 import { RoleModal } from './components/RoleModal'
 import { PermissionMatrix } from './components/PermissionMatrix'
 import { DeleteConfirmDialog } from '../users/components/DeleteConfirmDialog'
-
-function SkeletonRow() {
-  return (
-    <tr>
-      {Array.from({ length: 5 }).map((_, i) => (
-        <td key={i} style={{ padding: '12px 16px' }}>
-          <div style={{ height: 14, background: '#F3F4F6', borderRadius: 4, animation: 'pulse 2s infinite' }} />
-        </td>
-      ))}
-    </tr>
-  )
-}
+import { DataTable } from '@/shared/ui/DataTable'
 
 export function RolesPage() {
   const [page, setPage] = useState(1)
@@ -31,6 +21,123 @@ export function RolesPage() {
 
   const roles: Role[] = data?.data ?? []
   const meta = data?.meta
+
+  const columns = useMemo<ColumnDef<Role, unknown>[]>(
+    () => [
+      {
+        id: 'name',
+        header: 'Name',
+        cell: ({ row }) => {
+          const role = row.original
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontWeight: 500, color: '#1A1A1A' }}>{role.name}</span>
+              {role.is_system && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 9999, fontSize: 11, fontWeight: 500, background: '#F3F4F6', color: '#6B7280' }}>
+                  <Shield size={10} />
+                  system
+                </span>
+              )}
+            </div>
+          )
+        },
+      },
+      {
+        accessorKey: 'slug',
+        header: 'Slug',
+        cell: ({ getValue }) => (
+          <code style={{ fontSize: 12, color: '#6B7280', background: '#F9FAFB', padding: '2px 6px', borderRadius: 4, border: '1px solid #E5E7EB' }}>
+            {getValue() as string}
+          </code>
+        ),
+      },
+      {
+        accessorKey: 'description',
+        header: 'Description',
+        cell: ({ getValue }) => (
+          <span style={{ color: '#6B7280', fontSize: 13 }}>{(getValue() as string | null) ?? '—'}</span>
+        ),
+      },
+      {
+        id: 'active',
+        header: 'Active',
+        cell: ({ row }) => {
+          const role = row.original
+          return (
+            <button
+              onClick={() => !role.is_system && updateRole.mutate({ id: role.id, is_active: !role.is_active })}
+              disabled={role.is_system}
+              style={{
+                position: 'relative',
+                width: 36,
+                height: 20,
+                borderRadius: 9999,
+                border: 'none',
+                background: role.is_active ? '#10B981' : '#E5E7EB',
+                cursor: role.is_system ? 'not-allowed' : 'pointer',
+                opacity: role.is_system ? 0.5 : 1,
+                transition: 'background 150ms',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: 14,
+                  height: 14,
+                  borderRadius: '50%',
+                  background: 'white',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                  transform: role.is_active ? 'translateX(18px)' : 'translateX(3px)',
+                  transition: 'transform 150ms',
+                }}
+              />
+            </button>
+          )
+        },
+      },
+      {
+        id: 'actions',
+        header: 'Actions',
+        cell: ({ row }) => {
+          const role = row.original
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <button
+                onClick={() => setPermRole(role)}
+                title="Manage permissions"
+                style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', transition: 'color 150ms, background 150ms' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; (e.currentTarget as HTMLElement).style.color = '#D94F3D' }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
+              >
+                <Settings size={14} />
+              </button>
+              <button
+                onClick={() => { setEditRole(role); setModalOpen(true) }}
+                style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', transition: 'color 150ms, background 150ms' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; (e.currentTarget as HTMLElement).style.color = '#D94F3D' }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
+              >
+                <Pencil size={14} />
+              </button>
+              <button
+                onClick={() => !role.is_system && setDeleteRole(role)}
+                disabled={role.is_system}
+                title={role.is_system ? 'System roles cannot be deleted' : 'Delete'}
+                style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: role.is_system ? 'not-allowed' : 'pointer', color: '#9CA3AF', display: 'flex', opacity: role.is_system ? 0.4 : 1, transition: 'color 150ms, background 150ms' }}
+                onMouseEnter={(e) => { if (!role.is_system) { (e.currentTarget as HTMLElement).style.background = '#FEF2F2'; (e.currentTarget as HTMLElement).style.color = '#EF4444' } }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          )
+        },
+      },
+    ],
+    [updateRole],
+  )
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -68,140 +175,38 @@ export function RolesPage() {
         </div>
       )}
 
-      {/* Table */}
-      <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="archie-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Slug</th>
-                <th>Description</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading
-                ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
-                : roles.map((role) => (
-                    <tr key={role.id}>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontWeight: 500, color: '#1A1A1A' }}>{role.name}</span>
-                          {role.is_system && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 9999, fontSize: 11, fontWeight: 500, background: '#F3F4F6', color: '#6B7280' }}>
-                              <Shield size={10} />
-                              system
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <code style={{ fontSize: 12, color: '#6B7280', background: '#F9FAFB', padding: '2px 6px', borderRadius: 4, border: '1px solid #E5E7EB' }}>
-                          {role.slug}
-                        </code>
-                      </td>
-                      <td style={{ color: '#6B7280', fontSize: 13 }}>{role.description ?? '—'}</td>
-                      <td>
-                        <button
-                          onClick={() => !role.is_system && updateRole.mutate({ id: role.id, is_active: !role.is_active })}
-                          disabled={role.is_system}
-                          style={{
-                            position: 'relative',
-                            width: 36,
-                            height: 20,
-                            borderRadius: 9999,
-                            border: 'none',
-                            background: role.is_active ? '#10B981' : '#E5E7EB',
-                            cursor: role.is_system ? 'not-allowed' : 'pointer',
-                            opacity: role.is_system ? 0.5 : 1,
-                            transition: 'background 150ms',
-                            display: 'flex',
-                            alignItems: 'center',
-                          }}
-                        >
-                          <span
-                            style={{
-                              display: 'inline-block',
-                              width: 14,
-                              height: 14,
-                              borderRadius: '50%',
-                              background: 'white',
-                              boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
-                              transform: role.is_active ? 'translateX(18px)' : 'translateX(3px)',
-                              transition: 'transform 150ms',
-                            }}
-                          />
-                        </button>
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <button
-                            onClick={() => setPermRole(role)}
-                            title="Manage permissions"
-                            style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', transition: 'color 150ms, background 150ms' }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; (e.currentTarget as HTMLElement).style.color = '#D94F3D' }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
-                          >
-                            <Settings size={14} />
-                          </button>
-                          <button
-                            onClick={() => { setEditRole(role); setModalOpen(true) }}
-                            style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', transition: 'color 150ms, background 150ms' }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; (e.currentTarget as HTMLElement).style.color = '#D94F3D' }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
-                          >
-                            <Pencil size={14} />
-                          </button>
-                          <button
-                            onClick={() => !role.is_system && setDeleteRole(role)}
-                            disabled={role.is_system}
-                            title={role.is_system ? 'System roles cannot be deleted' : 'Delete'}
-                            style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: role.is_system ? 'not-allowed' : 'pointer', color: '#9CA3AF', display: 'flex', opacity: role.is_system ? 0.4 : 1, transition: 'color 150ms, background 150ms' }}
-                            onMouseEnter={(e) => { if (!role.is_system) { (e.currentTarget as HTMLElement).style.background = '#FEF2F2'; (e.currentTarget as HTMLElement).style.color = '#EF4444' } }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-              {!isLoading && roles.length === 0 && (
-                <tr>
-                  <td colSpan={5} style={{ padding: '48px 16px', textAlign: 'center', color: '#9CA3AF' }}>No roles found</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+      {/* DataTable */}
+      <DataTable
+        data={roles}
+        columns={columns}
+        isLoading={isLoading}
+        emptyMessage="No roles found"
+      />
 
-        {/* Pagination */}
-        {meta && meta.total_pages > 1 && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderTop: '1px solid #F3F4F6' }}>
-            <p style={{ fontSize: 12, color: '#9CA3AF' }}>
-              Page {meta.page} of {meta.total_pages} — {meta.total} total
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                style={{ padding: 6, borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1, display: 'flex' }}
-              >
-                <ChevronLeft size={14} />
-              </button>
-              <button
-                onClick={() => setPage((p) => Math.min(meta.total_pages, p + 1))}
-                disabled={page >= meta.total_pages}
-                style={{ padding: 6, borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', cursor: page >= meta.total_pages ? 'not-allowed' : 'pointer', opacity: page >= meta.total_pages ? 0.4 : 1, display: 'flex' }}
-              >
-                <ChevronRight size={14} />
-              </button>
-            </div>
+      {/* Pagination */}
+      {meta && meta.total_pages > 1 && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
+          <p style={{ fontSize: 12, color: '#9CA3AF' }}>
+            Page {meta.page} of {meta.total_pages} — {meta.total} total
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              style={{ padding: 6, borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1, display: 'flex' }}
+            >
+              <ChevronLeft size={14} />
+            </button>
+            <button
+              onClick={() => setPage((p) => Math.min(meta.total_pages, p + 1))}
+              disabled={page >= meta.total_pages}
+              style={{ padding: 6, borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', cursor: page >= meta.total_pages ? 'not-allowed' : 'pointer', opacity: page >= meta.total_pages ? 0.4 : 1, display: 'flex' }}
+            >
+              <ChevronRight size={14} />
+            </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Modals */}
       <RoleModal

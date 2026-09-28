@@ -1,23 +1,13 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Plus, Search, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
+import type { ColumnDef } from '@tanstack/react-table'
 import type { UserWithRoles } from '@/shared/api/types'
 import { useUsers, useDeleteUser, useUpdateUserStatus } from '@/features/users/queries'
 import { useRoles } from '@/features/roles/queries'
 import { StatusBadge } from './components/StatusBadge'
 import { DeleteConfirmDialog } from './components/DeleteConfirmDialog'
 import { UserModal } from './components/UserModal'
-
-function SkeletonRow() {
-  return (
-    <tr>
-      {Array.from({ length: 7 }).map((_, i) => (
-        <td key={i} style={{ padding: '12px 16px' }}>
-          <div style={{ height: 14, background: '#F3F4F6', borderRadius: 4, animation: 'pulse 2s infinite' }} />
-        </td>
-      ))}
-    </tr>
-  )
-}
+import { DataTable } from '@/shared/ui/DataTable'
 
 const STATUS_OPTIONS = [
   { value: '', label: 'All Status' },
@@ -67,6 +57,110 @@ export function UsersPage() {
   const meta = data?.meta
   const roleOptions = rolesData?.data ?? []
 
+  const columns = useMemo<ColumnDef<UserWithRoles, unknown>[]>(
+    () => [
+      {
+        id: 'avatar',
+        header: '',
+        cell: ({ row }) => {
+          const user = row.original
+          return (
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#FFF5F3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#D94F3D', overflow: 'hidden' }}>
+              {user.avatar
+                ? <img src={user.avatar} style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: '50%' }} alt="" />
+                : (user.name?.[0]?.toUpperCase() ?? '?')}
+            </div>
+          )
+        },
+      },
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        cell: ({ getValue }) => (
+          <span style={{ fontWeight: 500, color: '#1A1A1A' }}>{getValue() as string}</span>
+        ),
+      },
+      {
+        accessorKey: 'email',
+        header: 'Email',
+        cell: ({ getValue }) => (
+          <span style={{ color: '#6B7280' }}>{getValue() as string}</span>
+        ),
+      },
+      {
+        id: 'status',
+        header: 'Status',
+        cell: ({ row }) => {
+          const user = row.original
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <StatusBadge status={user.status} />
+              <select
+                value={user.status}
+                onChange={(e) => updateStatusMutation.mutate({ id: user.id, status: e.target.value })}
+                style={{ fontSize: 11, border: '1px solid #E5E7EB', borderRadius: 4, background: 'white', color: '#6B7280', padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
+              >
+                {STATUS_OPTIONS.filter((o) => o.value).map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
+          )
+        },
+      },
+      {
+        id: 'roles',
+        header: 'Roles',
+        cell: ({ row }) => (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+            {row.original.roles?.map((r) => (
+              <span key={r.id} style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 9999, fontSize: 11, fontWeight: 500, background: '#FFF5F3', color: '#D94F3D' }}>
+                {r.name}
+              </span>
+            ))}
+          </div>
+        ),
+      },
+      {
+        id: 'created_at',
+        header: 'Created At',
+        cell: ({ row }) => (
+          <span style={{ fontSize: 12, color: '#9CA3AF' }}>
+            {row.original.created_at ? new Date(row.original.created_at).toLocaleDateString() : '—'}
+          </span>
+        ),
+      },
+      {
+        id: 'actions',
+        header: 'Actions',
+        cell: ({ row }) => {
+          const user = row.original
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <button
+                onClick={() => { setEditUser(user); setModalOpen(true) }}
+                style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', transition: 'color 150ms, background 150ms' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; (e.currentTarget as HTMLElement).style.color = '#D94F3D' }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
+              >
+                <Pencil size={14} />
+              </button>
+              <button
+                onClick={() => setDeleteUser(user)}
+                style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', transition: 'color 150ms, background 150ms' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FEF2F2'; (e.currentTarget as HTMLElement).style.color = '#EF4444' }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          )
+        },
+      },
+    ],
+    [updateStatusMutation],
+  )
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Header */}
@@ -112,117 +206,38 @@ export function UsersPage() {
         </select>
       </div>
 
-      {/* Table */}
-      <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="archie-table">
-            <thead>
-              <tr>
-                <th style={{ width: 40 }}></th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Status</th>
-                <th>Roles</th>
-                <th>Created</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading
-                ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
-                : users.map((user) => (
-                    <tr key={user.id}>
-                      <td>
-                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#FFF5F3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#D94F3D', overflow: 'hidden' }}>
-                          {user.avatar
-                            ? <img src={user.avatar} style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: '50%' }} alt="" />
-                            : (user.name?.[0]?.toUpperCase() ?? '?')}
-                        </div>
-                      </td>
-                      <td style={{ fontWeight: 500, color: '#1A1A1A' }}>{user.name}</td>
-                      <td style={{ color: '#6B7280' }}>{user.email}</td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <StatusBadge status={user.status} />
-                          <select
-                            value={user.status}
-                            onChange={(e) => updateStatusMutation.mutate({ id: user.id, status: e.target.value })}
-                            style={{ fontSize: 11, border: '1px solid #E5E7EB', borderRadius: 4, background: 'white', color: '#6B7280', padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
-                          >
-                            {STATUS_OPTIONS.filter((o) => o.value).map((o) => (
-                              <option key={o.value} value={o.value}>{o.label}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                          {user.roles?.map((r) => (
-                            <span key={r.id} style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 9999, fontSize: 11, fontWeight: 500, background: '#FFF5F3', color: '#D94F3D' }}>
-                              {r.name}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td style={{ fontSize: 12, color: '#9CA3AF' }}>
-                        {user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <button
-                            onClick={() => { setEditUser(user); setModalOpen(true) }}
-                            style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', transition: 'color 150ms, background 150ms' }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; (e.currentTarget as HTMLElement).style.color = '#D94F3D' }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
-                          >
-                            <Pencil size={14} />
-                          </button>
-                          <button
-                            onClick={() => setDeleteUser(user)}
-                            style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', transition: 'color 150ms, background 150ms' }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FEF2F2'; (e.currentTarget as HTMLElement).style.color = '#EF4444' }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-              {!isLoading && users.length === 0 && (
-                <tr>
-                  <td colSpan={7} style={{ padding: '48px 16px', textAlign: 'center', color: '#9CA3AF' }}>No users found</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+      {/* DataTable */}
+      <DataTable
+        data={users}
+        columns={columns}
+        isLoading={isLoading}
+        emptyMessage="No users found"
+      />
 
-        {/* Pagination */}
-        {meta && meta.total_pages > 1 && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderTop: '1px solid #F3F4F6' }}>
-            <p style={{ fontSize: 12, color: '#9CA3AF' }}>
-              Page {meta.page} of {meta.total_pages} — {meta.total} total
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                style={{ padding: 6, borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1, display: 'flex' }}
-              >
-                <ChevronLeft size={14} />
-              </button>
-              <button
-                onClick={() => setPage((p) => Math.min(meta.total_pages, p + 1))}
-                disabled={page >= meta.total_pages}
-                style={{ padding: 6, borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', cursor: page >= meta.total_pages ? 'not-allowed' : 'pointer', opacity: page >= meta.total_pages ? 0.4 : 1, display: 'flex' }}
-              >
-                <ChevronRight size={14} />
-              </button>
-            </div>
+      {/* Pagination */}
+      {meta && meta.total_pages > 1 && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
+          <p style={{ fontSize: 12, color: '#9CA3AF' }}>
+            Page {meta.page} of {meta.total_pages} — {meta.total} total
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              style={{ padding: 6, borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1, display: 'flex' }}
+            >
+              <ChevronLeft size={14} />
+            </button>
+            <button
+              onClick={() => setPage((p) => Math.min(meta.total_pages, p + 1))}
+              disabled={page >= meta.total_pages}
+              style={{ padding: 6, borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', cursor: page >= meta.total_pages ? 'not-allowed' : 'pointer', opacity: page >= meta.total_pages ? 0.4 : 1, display: 'flex' }}
+            >
+              <ChevronRight size={14} />
+            </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Modals */}
       <UserModal

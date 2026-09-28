@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import type { ColumnDef } from '@tanstack/react-table'
 import { useSettings, useUpdateSetting } from '@/features/settings/queries'
 import type { Setting } from '@/shared/api/types'
+import { DataTable } from '@/shared/ui/DataTable'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -150,6 +152,40 @@ function ValueCell({ setting }: { setting: Setting }) {
 export function SettingsPage() {
   const { data: settings, isLoading } = useSettings()
 
+  const columns = useMemo<ColumnDef<Setting, unknown>[]>(
+    () => [
+      {
+        accessorKey: 'key',
+        header: 'Key',
+        cell: ({ getValue }) => (
+          <span style={{ fontFamily: 'monospace', fontSize: 12, color: '#1A1A1A', whiteSpace: 'nowrap' }}>
+            {getValue() as string}
+          </span>
+        ),
+      },
+      {
+        id: 'value',
+        header: 'Value',
+        cell: ({ row }) => (
+          <div style={{ maxWidth: 300 }}>
+            <ValueCell setting={row.original} />
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'type',
+        header: 'Type',
+        cell: ({ getValue }) => <TypeBadge type={getValue() as string} />,
+      },
+      {
+        id: 'visibility',
+        header: 'Visibility',
+        cell: ({ row }) => <VisibilityBadge setting={row.original} />,
+      },
+    ],
+    [],
+  )
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div>
@@ -159,47 +195,12 @@ export function SettingsPage() {
         </p>
       </div>
 
-      <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-        {isLoading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}>
-            <div className="spinner" />
-          </div>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="archie-table" style={{ minWidth: '100%' }}>
-              <thead>
-                <tr>
-                  {['Key', 'Value', 'Type', 'Visibility'].map((h) => (
-                    <th key={h}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {settings?.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} style={{ padding: '48px 16px', textAlign: 'center', color: '#9CA3AF' }}>
-                      No settings configured.
-                    </td>
-                  </tr>
-                ) : (
-                  settings?.map((setting) => (
-                    <tr key={setting.id}>
-                      <td style={{ fontFamily: 'monospace', fontSize: 12, color: '#1A1A1A', whiteSpace: 'nowrap' }}>
-                        {setting.key}
-                      </td>
-                      <td style={{ maxWidth: 300 }}>
-                        <ValueCell setting={setting} />
-                      </td>
-                      <td><TypeBadge type={setting.type} /></td>
-                      <td><VisibilityBadge setting={setting} /></td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      <DataTable
+        data={settings ?? []}
+        columns={columns}
+        isLoading={isLoading}
+        emptyMessage="No settings configured."
+      />
     </div>
   )
 }

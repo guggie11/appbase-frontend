@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Link } from 'react-router-dom'
 import { Loader2, CheckCircle } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useRegister } from '@/features/auth/queries'
 import type { ApiErrorBody } from '@/shared/api/types'
 import axios from 'axios'
@@ -154,7 +155,10 @@ export function RegisterPage() {
           padding: '32px 24px',
         }}
       >
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
           style={{
             width: '100%',
             maxWidth: 440,
@@ -375,7 +379,7 @@ export function RegisterPage() {
               </form>
             </>
           )}
-        </div>
+        </motion.div>
       </div>
     </div>
   )
