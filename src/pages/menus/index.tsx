@@ -137,10 +137,10 @@ function TreeRow({
         {/* Roles */}
         <td className="px-4 py-3">
           <div className="flex flex-wrap gap-1">
-            {node.roles.length === 0 ? (
+            {(node.roles ?? []).length === 0 ? (
               <span className="text-xs text-gray-400">All</span>
             ) : (
-              node.roles.map((r) => (
+              node.roles?.map((r) => (
                 <span
                   key={r.id}
                   className="rounded-full bg-[#FFF5F3] text-[#D94F3D] px-2 py-0.5 text-xs"
