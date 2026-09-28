@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -73,6 +73,32 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
   })
 
   const selectedRoleIds = watch('role_ids')
+
+  // Reset form setiap kali modal dibuka atau editMenu berubah
+  useEffect(() => {
+    if (open) {
+      reset(editMenu
+        ? {
+            label: editMenu.label,
+            icon: editMenu.icon ?? '',
+            path: editMenu.path ?? '',
+            parent_id: editMenu.parent_id ?? '',
+            order_index: editMenu.order_index,
+            is_active: editMenu.is_active,
+            role_ids: (editMenu.roles ?? []).map((r) => r.id.toString()),
+          }
+        : {
+            label: '',
+            icon: '',
+            path: '',
+            parent_id: '',
+            order_index: 0,
+            is_active: true,
+            role_ids: [],
+          })
+      setError(null)
+    }
+  }, [open, editMenu, reset])
 
   function toggleRole(id: string) {
     const current = watch('role_ids')
