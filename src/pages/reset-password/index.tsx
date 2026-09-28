@@ -43,10 +43,10 @@ export function ResetPasswordPage() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4">
-        <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 text-center">
           <p className="text-red-500 mb-4">Token tidak valid atau sudah kadaluarsa.</p>
-          <Link to="/forgot-password" className="text-indigo-600 hover:underline text-sm">
+          <Link to="/forgot-password" className="text-[#D94F3D] hover:underline text-sm">
             Minta link reset baru
           </Link>
         </div>
@@ -69,25 +69,25 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+        <h1 className="text-2xl font-semibold text-gray-900 mb-1">
           Reset Password
         </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        <p className="text-sm text-gray-500 mb-6">
           Buat password baru untuk akunmu.
         </p>
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Password Baru
             </label>
             <input
               {...register('password')}
               type="password"
               autoComplete="new-password"
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#D94F3D]"
               placeholder="••••••••"
             />
             {errors.password && (
@@ -96,14 +96,14 @@ export function ResetPasswordPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Konfirmasi Password
             </label>
             <input
               {...register('confirmPassword')}
               type="password"
               autoComplete="new-password"
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#D94F3D]"
               placeholder="••••••••"
             />
             {errors.confirmPassword && (
@@ -112,7 +112,7 @@ export function ResetPasswordPage() {
           </div>
 
           {errors.root && (
-            <p className="text-sm text-red-500 bg-red-50 dark:bg-red-950 rounded-lg px-3 py-2">
+            <p className="text-sm text-red-500 bg-red-50 rounded-lg px-3 py-2">
               {errors.root.message}
             </p>
           )}
@@ -120,7 +120,7 @@ export function ResetPasswordPage() {
           <button
             type="submit"
             disabled={resetPassword.isPending}
-            className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium py-2.5 text-sm transition-colors"
+            className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#D94F3D] hover:bg-[#C0392B] disabled:opacity-60 text-white font-medium py-2.5 text-sm transition-colors"
           >
             {resetPassword.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
             Reset Password
