@@ -51,6 +51,18 @@ pnpm dev
 pnpm build
 ```
 
+## API Client Generation
+
+Backend harus berjalan atau `openapi.json` tersedia di `../appbase-backend/openapi.json`.
+
+```bash
+# Generate (atau update ulang) TypeScript client dari OpenAPI schema backend
+pnpm gen:api
+```
+
+File hasil generate disimpan di `src/shared/api/generated/` (di-gitignore, jangan di-commit).
+Re-generate setiap kali ada perubahan di backend API.
+
 ## Generate API client
 
 Place `openapi.json` from appbase-infrastructure and run:
