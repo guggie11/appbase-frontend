@@ -83,6 +83,13 @@ export const router = createBrowserRouter([
     },
   },
   {
+    path: '/accept-invitation',
+    lazy: async () => {
+      const { AcceptInvitationPage } = await import('../pages/accept-invitation')
+      return { Component: AcceptInvitationPage }
+    },
+  },
+  {
     path: '/forbidden',
     lazy: async () => {
       const { ForbiddenPage } = await import('../pages/forbidden')
