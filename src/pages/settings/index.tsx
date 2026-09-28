@@ -7,15 +7,15 @@ import type { Setting } from '@/shared/api/types'
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function TypeBadge({ type }: { type: string }) {
-  const color: Record<string, string> = {
-    string: 'bg-blue-100 text-blue-700',
-    boolean: 'bg-purple-100 text-purple-700',
-    integer: 'bg-orange-100 text-orange-700',
-    float: 'bg-yellow-100 text-yellow-700',
-    json: 'bg-gray-100 text-gray-700',
+  const styleMap: Record<string, React.CSSProperties> = {
+    string: { background: '#EFF6FF', color: '#3B82F6' },
+    boolean: { background: '#F5F3FF', color: '#7C3AED' },
+    integer: { background: '#FFF7ED', color: '#D97706' },
+    float: { background: '#FFFBEB', color: '#D97706' },
+    json: { background: '#F3F4F6', color: '#6B7280' },
   }
   return (
-    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${color[type] ?? 'bg-gray-100 text-gray-700'}`}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 9999, fontSize: 11, fontWeight: 500, ...(styleMap[type] ?? { background: '#F3F4F6', color: '#6B7280' }) }}>
       {type}
     </span>
   )
@@ -23,24 +23,12 @@ function TypeBadge({ type }: { type: string }) {
 
 function VisibilityBadge({ setting }: { setting: Setting }) {
   if (setting.is_secret) {
-    return (
-      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
-        secret
-      </span>
-    )
+    return <span style={{ display: 'inline-flex', padding: '2px 8px', borderRadius: 9999, fontSize: 11, fontWeight: 500, background: '#FEF2F2', color: '#DC2626' }}>secret</span>
   }
   if (setting.is_public) {
-    return (
-      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-        public
-      </span>
-    )
+    return <span style={{ display: 'inline-flex', padding: '2px 8px', borderRadius: 9999, fontSize: 11, fontWeight: 500, background: '#ECFDF5', color: '#059669' }}>public</span>
   }
-  return (
-    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-      private
-    </span>
-  )
+  return <span style={{ display: 'inline-flex', padding: '2px 8px', borderRadius: 9999, fontSize: 11, fontWeight: 500, background: '#F3F4F6', color: '#6B7280' }}>private</span>
 }
 
 // ── Inline editable value cell ─────────────────────────────────────────────
@@ -53,7 +41,6 @@ function ValueCell({ setting }: { setting: Setting }) {
   const [secretDraft, setSecretDraft] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // sync if value changes externally
   useEffect(() => {
     if (!editing) setDraft(setting.value ?? '')
   }, [setting.value, editing])
@@ -89,37 +76,36 @@ function ValueCell({ setting }: { setting: Setting }) {
     }
   }
 
-  // Secret field: masked display + separate update button
   if (setting.is_secret) {
     return (
-      <div className="flex items-center gap-2">
-        <span className="font-mono text-sm text-gray-500 tracking-widest">••••••</span>
-        <div className="flex items-center gap-1">
-          <div className="relative">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontFamily: 'monospace', fontSize: 13, color: '#9CA3AF', letterSpacing: 2 }}>••••••</span>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ position: 'relative' }}>
             <input
               type={showSecret ? 'text' : 'password'}
               value={secretDraft}
               onChange={(e) => setSecretDraft(e.target.value)}
               placeholder="New value"
-              className="rounded border border-gray-300 px-2 py-1 pr-8 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') commitSecret()
-              }}
+              style={{ border: '1px solid #E5E7EB', borderRadius: 6, padding: '4px 32px 4px 8px', fontSize: 12, width: 140, outline: 'none' }}
+              onFocus={(e) => { e.target.style.borderColor = '#D94F3D'; e.target.style.boxShadow = '0 0 0 3px rgba(217,79,61,0.1)' }}
+              onBlur={(e) => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none' }}
+              onKeyDown={(e) => { if (e.key === 'Enter') commitSecret() }}
             />
             <button
               type="button"
               onClick={() => setShowSecret((v) => !v)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
+              style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', cursor: 'pointer', color: '#9CA3AF', display: 'flex' }}
             >
-              {showSecret ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+              {showSecret ? <EyeOff size={12} /> : <Eye size={12} />}
             </button>
           </div>
           <button
             onClick={commitSecret}
             disabled={!secretDraft || updateSetting.isPending}
-            className="px-2 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ padding: '4px 10px', fontSize: 11, background: '#D94F3D', color: 'white', border: 'none', borderRadius: 6, cursor: !secretDraft ? 'not-allowed' : 'pointer', opacity: !secretDraft ? 0.4 : 1, display: 'flex', alignItems: 'center' }}
           >
-            {updateSetting.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Update'}
+            {updateSetting.isPending ? <Loader2 size={10} className="animate-spin" /> : 'Update'}
           </button>
         </div>
       </div>
@@ -135,12 +121,9 @@ function ValueCell({ setting }: { setting: Setting }) {
         onBlur={commitInline}
         onKeyDown={(e) => {
           if (e.key === 'Enter') commitInline()
-          if (e.key === 'Escape') {
-            setDraft(setting.value ?? '')
-            setEditing(false)
-          }
+          if (e.key === 'Escape') { setDraft(setting.value ?? ''); setEditing(false) }
         }}
-        className="rounded border border-indigo-400 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full max-w-xs"
+        style={{ border: '1px solid #D94F3D', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', width: '100%', maxWidth: 280, boxShadow: '0 0 0 3px rgba(217,79,61,0.1)' }}
       />
     )
   }
@@ -149,12 +132,14 @@ function ValueCell({ setting }: { setting: Setting }) {
     <button
       onClick={() => setEditing(true)}
       title="Click to edit"
-      className="text-left text-sm text-gray-700 hover:text-indigo-600 hover:underline cursor-text max-w-xs truncate w-full"
+      style={{ textAlign: 'left', fontSize: 13, color: '#374151', background: 'transparent', border: 'none', cursor: 'text', maxWidth: 280, width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: 0 }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#D94F3D' }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#374151' }}
     >
       {updateSetting.isPending ? (
-        <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+        <Loader2 size={14} className="animate-spin" style={{ color: '#D94F3D' }} />
       ) : (
-        <span>{setting.value ?? <span className="text-gray-400 italic">empty</span>}</span>
+        <span>{setting.value ?? <span style={{ color: '#9CA3AF', fontStyle: 'italic' }}>empty</span>}</span>
       )}
     </button>
   )
@@ -166,58 +151,53 @@ export function SettingsPage() {
   const { data: settings, isLoading } = useSettings()
 
   return (
-    <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-semibold text-gray-900">App Settings</h1>
-      <p className="text-sm text-gray-500">
-        Click on a value to edit inline. Press Enter or blur to save.
-      </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1A1A1A', marginBottom: 2 }}>App Settings</h1>
+        <p style={{ fontSize: 13, color: '#6B7280' }}>
+          Click on a value to edit inline. Press Enter or blur to save.
+        </p>
+      </div>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+      <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}>
+            <div className="spinner" />
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                {['Key', 'Value', 'Type', 'Visibility'].map((h) => (
-                  <th
-                    key={h}
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {settings?.length === 0 ? (
+          <div style={{ overflowX: 'auto' }}>
+            <table className="archie-table" style={{ minWidth: '100%' }}>
+              <thead>
                 <tr>
-                  <td colSpan={4} className="py-10 text-center text-gray-400 text-sm">
-                    No settings configured.
-                  </td>
+                  {['Key', 'Value', 'Type', 'Visibility'].map((h) => (
+                    <th key={h}>{h}</th>
+                  ))}
                 </tr>
-              ) : (
-                settings?.map((setting) => (
-                  <tr key={setting.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 font-mono text-sm text-gray-800 whitespace-nowrap">
-                      {setting.key}
-                    </td>
-                    <td className="px-4 py-3 max-w-xs">
-                      <ValueCell setting={setting} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <TypeBadge type={setting.type} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <VisibilityBadge setting={setting} />
+              </thead>
+              <tbody>
+                {settings?.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} style={{ padding: '48px 16px', textAlign: 'center', color: '#9CA3AF' }}>
+                      No settings configured.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  settings?.map((setting) => (
+                    <tr key={setting.id}>
+                      <td style={{ fontFamily: 'monospace', fontSize: 12, color: '#1A1A1A', whiteSpace: 'nowrap' }}>
+                        {setting.key}
+                      </td>
+                      <td style={{ maxWidth: 300 }}>
+                        <ValueCell setting={setting} />
+                      </td>
+                      <td><TypeBadge type={setting.type} /></td>
+                      <td><VisibilityBadge setting={setting} /></td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

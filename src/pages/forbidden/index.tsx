@@ -3,24 +3,43 @@ import { ShieldOff } from 'lucide-react'
 
 export function ForbiddenPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4">
-      <div className="text-center space-y-4 max-w-sm">
-        <div className="flex justify-center">
-          <ShieldOff className="h-16 w-16 text-red-400" />
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F5F5F5', padding: '0 24px' }}>
+      <div style={{ textAlign: 'center', maxWidth: 360, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+        {/* Icon */}
+        <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <ShieldOff size={36} style={{ color: '#D94F3D' }} />
         </div>
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white">403</h1>
-        <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300">Access Forbidden</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          You don't have permission to access this page.
+
+        <div>
+          <div style={{ fontSize: 64, fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>403</div>
+          <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#D94F3D', marginTop: 8 }}>
+            Access Forbidden
+          </div>
+        </div>
+
+        <p style={{ fontSize: 14, color: '#6B7280', lineHeight: 1.6 }}>
+          You don't have permission to access this page. Contact your administrator if you believe this is an error.
         </p>
-        <div className="flex gap-3 justify-center pt-2">
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
-          >
-            Back to Dashboard
-          </Link>
-        </div>
+
+        <Link
+          to="/dashboard"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '10px 24px',
+            fontSize: 14,
+            fontWeight: 600,
+            borderRadius: 6,
+            background: '#D94F3D',
+            color: 'white',
+            textDecoration: 'none',
+            transition: 'background 150ms',
+          }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#C0392B' }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#D94F3D' }}
+        >
+          Back to Dashboard
+        </Link>
       </div>
     </div>
   )
