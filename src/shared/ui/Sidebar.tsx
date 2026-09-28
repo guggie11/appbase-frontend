@@ -232,10 +232,10 @@ export function Sidebar() {
         flexShrink: 0,
       }}
     >
-      {/* Logo area */}
+      {/* Logo area + collapse button */}
       <div
         style={{
-          padding: '0 16px',
+          padding: '0 12px 0 16px',
           height: 64,
           display: 'flex',
           alignItems: 'center',
@@ -264,7 +264,7 @@ export function Sidebar() {
           A
         </div>
         {!collapsed && (
-          <div style={{ overflow: 'hidden' }}>
+          <div style={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
             <div style={{ fontWeight: 700, fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#1A1A1A', whiteSpace: 'nowrap' }}>
               APPBASE
             </div>
@@ -273,6 +273,29 @@ export function Sidebar() {
             </div>
           </div>
         )}
+        {/* Collapse toggle — top right of logo area */}
+        <button
+          onClick={toggleCollapse}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 24,
+            height: 24,
+            borderRadius: 6,
+            border: '1px solid #E5E7EB',
+            background: 'transparent',
+            cursor: 'pointer',
+            color: '#9CA3AF',
+            flexShrink: 0,
+            transition: 'color 150ms, background 150ms',
+          }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#D94F3D'; (e.currentTarget as HTMLElement).style.background = '#F9FAFB' }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#9CA3AF'; (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+        >
+          {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
       </div>
 
       {/* New Feature CTA */}
@@ -356,28 +379,6 @@ export function Sidebar() {
           </div>
         )}
 
-        {/* Collapse toggle */}
-        <button
-          onClick={toggleCollapse}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '10px',
-            background: 'transparent',
-            border: 'none',
-            cursor: 'pointer',
-            color: '#9CA3AF',
-            transition: 'color 150ms',
-          }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#D94F3D' }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
-        >
-          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-          {!collapsed && <span style={{ fontSize: 11, marginLeft: 4, color: '#9CA3AF' }}>Collapse</span>}
-        </button>
       </div>
     </aside>
   )
