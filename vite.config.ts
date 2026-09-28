@@ -23,6 +23,15 @@ export default defineConfig({
     // Exclude framer-motion from pre-bundling to avoid Rolldown compat errors
     exclude: ['framer-motion'],
   },
+  server: {
+    allowedHosts: ['canned-cosmic-snide.ngrok-free.dev'],
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',

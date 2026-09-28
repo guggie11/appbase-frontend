@@ -7,86 +7,56 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
+  Cell,
 } from 'recharts'
-import { Users, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { useDashboardStats, useLoginActivity } from '@/features/dashboard/queries'
+import { useAuthStore } from '@/features/auth/store'
 
-// ── Stat Card ──────────────────────────────────────────────────────────────
+// ── Metric Card ────────────────────────────────────────────────────────────
 
-interface StatCardProps {
+interface MetricCardProps {
   label: string
   value: number | undefined
-  icon: React.ReactNode
-  color: 'green' | 'yellow' | 'red' | 'blue'
+  delta?: { value: number; positive: boolean }
+  sublabel?: string
   loading?: boolean
 }
 
-const colorMap = {
-  green: {
-    bg: 'bg-green-50',
-    icon: 'bg-green-100 text-green-600',
-    text: 'text-green-700',
-    bar: 'bg-green-400',
-  },
-  yellow: {
-    bg: 'bg-yellow-50',
-    icon: 'bg-yellow-100 text-yellow-600',
-    text: 'text-yellow-700',
-    bar: 'bg-yellow-400',
-  },
-  red: {
-    bg: 'bg-red-50',
-    icon: 'bg-red-100 text-red-600',
-    text: 'text-red-700',
-    bar: 'bg-red-400',
-  },
-  blue: {
-    bg: 'bg-blue-50',
-    icon: 'bg-blue-100 text-blue-600',
-    text: 'text-blue-700',
-    bar: 'bg-blue-400',
-  },
-}
-
-function StatCard({ label, value, icon, color, loading }: StatCardProps) {
-  const c = colorMap[color]
-
+function MetricCard({ label, value, delta, sublabel, loading }: MetricCardProps) {
   if (loading) {
     return (
-      <div className="rounded-xl border bg-white p-5 shadow-sm animate-pulse">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-full bg-slate-200" />
-          <div className="flex-1 space-y-2">
-            <div className="h-3 w-24 rounded bg-slate-200" />
-            <div className="h-6 w-16 rounded bg-slate-200" />
-          </div>
-        </div>
+      <div className="card animate-pulse">
+        <div style={{ height: 10, width: 80, background: '#F3F4F6', borderRadius: 4, marginBottom: 12 }} />
+        <div style={{ height: 28, width: 64, background: '#E5E7EB', borderRadius: 4, marginBottom: 8 }} />
+        <div style={{ height: 10, width: 100, background: '#F3F4F6', borderRadius: 4 }} />
       </div>
     )
   }
 
   return (
-    <div className={`rounded-xl border bg-white p-5 shadow-sm ${c.bg} border-transparent`}>
-      <div className="flex items-center gap-4">
-        <div className={`h-12 w-12 rounded-full flex items-center justify-center ${c.icon}`}>
-          {icon}
-        </div>
-        <div>
-          <p className="text-sm text-slate-500">{label}</p>
-          <p className={`text-2xl font-bold stat-count ${c.text}`}>{value ?? 0}</p>
-        </div>
+    <div className="card">
+      <div className="section-label" style={{ marginBottom: 8 }}>{label}</div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
+        <span className="metric-number">{value ?? 0}</span>
+        {delta !== undefined && (
+          <span style={{ fontSize: 12, fontWeight: 600, color: delta.positive ? '#10B981' : '#EF4444' }}>
+            {delta.positive ? '+' : ''}{delta.value}
+          </span>
+        )}
       </div>
+      {sublabel && (
+        <div style={{ fontSize: 12, color: '#6B7280' }}>{sublabel}</div>
+      )}
     </div>
   )
 }
 
-// ── Chart Skeleton ─────────────────────────────────────────────────────────
+// ── Chart skeleton ─────────────────────────────────────────────────────────
 
 function ChartSkeleton() {
   return (
-    <div className="h-64 rounded-xl bg-slate-100 animate-pulse" />
+    <div style={{ height: 260, background: '#F9FAFB', borderRadius: 8, animation: 'pulse 2s infinite' }} />
   )
 }
 
@@ -95,121 +65,127 @@ function ChartSkeleton() {
 export function DashboardPage() {
   const { data: stats, isLoading: statsLoading } = useDashboardStats()
   const { data: activity, isLoading: activityLoading } = useLoginActivity()
+  const user = useAuthStore((s) => s.user)
 
-  // Bar chart data: user status breakdown
+  const hour = new Date().getHours()
+  const greeting =
+    hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+
   const barData = stats
     ? [
-        { name: 'Active', value: stats.users.active, fill: '#22c55e' },
-        { name: 'Pending', value: stats.users.pending, fill: '#eab308' },
-        { name: 'Inactive', value: stats.users.inactive, fill: '#94a3b8' },
-        { name: 'Suspended', value: stats.users.suspended, fill: '#ef4444' },
+        { name: 'Active', value: stats.users.active, color: '#10B981' },
+        { name: 'Pending', value: stats.users.pending, color: '#F59E0B' },
+        { name: 'Inactive', value: stats.users.inactive, color: '#9CA3AF' },
+        { name: 'Suspended', value: stats.users.suspended, color: '#EF4444' },
       ]
     : []
 
-  // Line chart: last 30 days login activity
   const lineData = (activity ?? []).map((d) => ({
-    date: d.date.slice(5), // MM-DD
+    date: d.date.slice(5),
     Success: d.success_count,
     Failed: d.failed_count,
   }))
 
+  const pendingCount = stats?.users.pending ?? 0
+  const showAlert = pendingCount > 0
+
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* Greeting */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-        <p className="text-slate-500 text-sm mt-1">Platform overview & login activity</p>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#1A1A1A', marginBottom: 4 }}>
+          {greeting}, {user?.name?.split(' ')[0] ?? 'there'} 👋
+        </h1>
+        <p style={{ fontSize: 14, color: '#6B7280' }}>
+          Here's what's happening with your platform today.
+        </p>
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          label="Active Users"
+      {/* Alert card */}
+      {showAlert && (
+        <div className="alert-card">
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#D94F3D', marginBottom: 4 }}>
+            Team Action Needed
+          </div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}>
+            {pendingCount} user{pendingCount !== 1 ? 's' : ''} awaiting approval
+          </div>
+          <div style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>
+            Review pending accounts in the Users section.
+          </div>
+        </div>
+      )}
+
+      {/* Section label */}
+      <div className="section-label">AI Command Center</div>
+
+      {/* Stat cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+        <MetricCard
+          label="User Aktif"
           value={stats?.users.active}
-          icon={<Users size={20} />}
-          color="green"
+          delta={{ value: 6, positive: true }}
+          sublabel="Active accounts"
           loading={statsLoading}
         />
-        <StatCard
-          label="Pending Users"
+        <MetricCard
+          label="User Pending"
           value={stats?.users.pending}
-          icon={<Clock size={20} />}
-          color="yellow"
+          delta={{ value: pendingCount > 0 ? pendingCount : 0, positive: false }}
+          sublabel="Awaiting approval"
           loading={statsLoading}
         />
-        <StatCard
-          label="Suspended Users"
+        <MetricCard
+          label="User Suspended"
           value={stats?.users.suspended}
-          icon={<AlertTriangle size={20} />}
-          color="red"
+          sublabel="Suspended accounts"
           loading={statsLoading}
         />
-        <StatCard
-          label="Logins Today"
+        <MetricCard
+          label="Login Hari Ini"
           value={stats?.today.login_success}
-          icon={<CheckCircle2 size={20} />}
-          color="blue"
+          sublabel="Successful logins today"
           loading={statsLoading}
         />
       </div>
 
-      {/* Charts row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Line Chart: Login Activity */}
-        <div className="rounded-xl border bg-white p-5 shadow-sm">
-          <h2 className="text-base font-semibold text-slate-800 mb-4">
-            Login Activity (30 days)
-          </h2>
+      {/* Charts */}
+      <div className="section-label">Team Performance · Last 30 Days</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 16 }}>
+        {/* Line Chart */}
+        <div className="card" style={{ padding: 20 }}>
+          <div className="card-label" style={{ marginBottom: 16 }}>Login Activity</div>
           {activityLoading ? (
             <ChartSkeleton />
           ) : (
             <ResponsiveContainer width="100%" height={260}>
               <LineChart data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 11 }}
-                  interval="preserveStartEnd"
-                />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="Success"
-                  stroke="#22c55e"
-                  strokeWidth={2}
-                  dot={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="Failed"
-                  stroke="#ef4444"
-                  strokeWidth={2}
-                  dot={false}
-                />
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#9CA3AF' }} interval="preserveStartEnd" />
+                <YAxis tick={{ fontSize: 11, fill: '#9CA3AF' }} />
+                <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #E5E7EB', fontSize: 12 }} />
+                <Line type="monotone" dataKey="Success" stroke="#10B981" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="Failed" stroke="#EF4444" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           )}
         </div>
 
-        {/* Bar Chart: User Status */}
-        <div className="rounded-xl border bg-white p-5 shadow-sm">
-          <h2 className="text-base font-semibold text-slate-800 mb-4">
-            Users by Status
-          </h2>
+        {/* Bar Chart */}
+        <div className="card" style={{ padding: 20 }}>
+          <div className="card-label" style={{ marginBottom: 16 }}>Users by Status</div>
           {statsLoading ? (
             <ChartSkeleton />
           ) : (
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={barData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#9CA3AF' }} />
+                <YAxis tick={{ fontSize: 11, fill: '#9CA3AF' }} />
+                <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #E5E7EB', fontSize: 12 }} />
                 <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                   {barData.map((entry, index) => (
-                    <rect key={index} fill={entry.fill} />
+                    <Cell key={index} fill={entry.color} />
                   ))}
                 </Bar>
               </BarChart>

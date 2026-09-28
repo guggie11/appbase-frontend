@@ -41,83 +41,182 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4">
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Inter, sans-serif' }}>
+      {/* Left branding panel */}
       <div
-        className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 animate-fade-slide"
         style={{
-          animation: 'fadeSlideIn 0.35s ease-out both',
+          flex: '0 0 45%',
+          background: '#D94F3D',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          padding: '48px 56px',
+          color: 'white',
         }}
+        className="hidden md:flex"
       >
-        <style>{`
-          @keyframes fadeSlideIn {
-            from { opacity: 0; transform: translateY(24px); }
-            to   { opacity: 1; transform: translateY(0); }
-          }
-        `}</style>
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 48 }}>
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 700,
+              fontSize: 20,
+            }}
+          >
+            A
+          </div>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 18, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              APPBASE
+            </div>
+            <div style={{ fontSize: 10, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+              App Template
+            </div>
+          </div>
+        </div>
 
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">
-          Masuk ke Appbase
+        {/* Tagline */}
+        <h1 style={{ fontSize: 36, fontWeight: 700, lineHeight: 1.2, marginBottom: 16 }}>
+          Build faster.<br />Ship smarter.
         </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-          Selamat datang kembali!
+        <p style={{ fontSize: 16, opacity: 0.85, lineHeight: 1.7, maxWidth: 380 }}>
+          Appbase gives you a production-ready foundation with authentication,
+          roles, permissions, and audit logging — all in one template.
         </p>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Email
-            </label>
-            <input
-              {...register('email')}
-              type="email"
-              autoComplete="email"
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="you@example.com"
-            />
-            {errors.email && (
-              <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
-            )}
+        {/* Feature bullets */}
+        <div style={{ marginTop: 40, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {['Role-based access control', 'Audit logging & monitoring', 'Dynamic menu system', 'User management'].map((f) => (
+            <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.6)' }} />
+              {f}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Right form panel */}
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#F5F5F5',
+          padding: '32px 24px',
+        }}
+      >
+        <div
+          style={{
+            width: '100%',
+            maxWidth: 400,
+            background: 'white',
+            borderRadius: 12,
+            border: '1px solid #E5E7EB',
+            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.07)',
+            padding: '40px 36px',
+          }}
+        >
+          {/* Mobile logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28 }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#D94F3D', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700 }}>
+              A
+            </div>
+            <span style={{ fontWeight: 700, fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.05em' }}>APPBASE</span>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Password
-            </label>
-            <input
-              {...register('password')}
-              type="password"
-              autoComplete="current-password"
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="••••••••"
-            />
-            {errors.password && (
-              <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#1A1A1A', marginBottom: 6 }}>
+            Masuk ke Appbase
+          </h2>
+          <p style={{ fontSize: 13, color: '#6B7280', marginBottom: 28 }}>
+            Selamat datang kembali!
+          </p>
+
+          <form onSubmit={handleSubmit(onSubmit)} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 14, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+                Email
+              </label>
+              <input
+                {...register('email')}
+                type="email"
+                autoComplete="email"
+                className="form-input"
+                placeholder="you@example.com"
+              />
+              {errors.email && (
+                <p style={{ marginTop: 4, fontSize: 12, color: '#EF4444' }}>{errors.email.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: 14, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+                Password
+              </label>
+              <input
+                {...register('password')}
+                type="password"
+                autoComplete="current-password"
+                className="form-input"
+                placeholder="••••••••"
+              />
+              {errors.password && (
+                <p style={{ marginTop: 4, fontSize: 12, color: '#EF4444' }}>{errors.password.message}</p>
+              )}
+            </div>
+
+            {errors.root && (
+              <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 6, padding: '10px 14px', fontSize: 13, color: '#DC2626' }}>
+                {errors.root.message}
+              </div>
             )}
+
+            <button
+              type="submit"
+              disabled={login.isPending}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                width: '100%',
+                padding: '10px 16px',
+                background: '#D94F3D',
+                color: 'white',
+                fontWeight: 600,
+                fontSize: 14,
+                border: 'none',
+                borderRadius: 6,
+                cursor: login.isPending ? 'not-allowed' : 'pointer',
+                opacity: login.isPending ? 0.7 : 1,
+                transition: 'background 150ms',
+                marginTop: 4,
+              }}
+              onMouseEnter={(e) => { if (!login.isPending) (e.currentTarget as HTMLElement).style.background = '#C0392B' }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#D94F3D' }}
+            >
+              {login.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              Masuk
+            </button>
+          </form>
+
+          <div style={{ marginTop: 20, textAlign: 'center', fontSize: 13, color: '#6B7280' }}>
+            <Link
+              to="/forgot-password"
+              style={{ color: '#D94F3D', textDecoration: 'none', fontWeight: 500 }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline' }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'none' }}
+            >
+              Lupa password?
+            </Link>
           </div>
-
-          {errors.root && (
-            <p className="text-sm text-red-500 bg-red-50 dark:bg-red-950 rounded-lg px-3 py-2">
-              {errors.root.message}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={login.isPending}
-            className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium py-2.5 text-sm transition-colors"
-          >
-            {login.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            Masuk
-          </button>
-        </form>
-
-        <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
-          <Link
-            to="/forgot-password"
-            className="text-indigo-600 hover:underline"
-          >
-            Lupa password?
-          </Link>
         </div>
       </div>
     </div>
