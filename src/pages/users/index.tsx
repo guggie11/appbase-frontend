@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react'
-import { Plus, Search, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, ChevronLeft, ChevronRight, Download } from 'lucide-react'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { UserWithRoles } from '@/shared/api/types'
 import { useUsers, useDeleteUser, useUpdateUserStatus } from '@/features/users/queries'
 import { useRoles } from '@/features/roles/queries'
+import { apiClient } from '@/shared/api/client'
 import { StatusBadge } from './components/StatusBadge'
 import { DeleteConfirmDialog } from './components/DeleteConfirmDialog'
 import { UserModal } from './components/UserModal'
@@ -37,11 +38,29 @@ export function UsersPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editUser, setEditUser] = useState<UserWithRoles | null>(null)
   const [deleteUser, setDeleteUser] = useState<UserWithRoles | null>(null)
+  const [exporting, setExporting] = useState(false)
 
   const { data, isLoading } = useUsers({ page, per_page: 10, search, status, role_id: roleId })
   const { data: rolesData } = useRoles(1, 100)
   const deleteMutation = useDeleteUser()
   const updateStatusMutation = useUpdateUserStatus()
+
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      const response = await apiClient.get('/users/export?format=csv', {
+        responseType: 'blob'
+      })
+      const url = URL.createObjectURL(response.data)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `users_${new Date().toISOString().split('T')[0]}.csv`
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setExporting(false)
+    }
+  }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
@@ -169,13 +188,30 @@ export function UsersPage() {
           <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1A1A1A', marginBottom: 2 }}>Users</h1>
           <p style={{ fontSize: 13, color: '#6B7280' }}>Manage user accounts and roles</p>
         </div>
-        <button
-          onClick={() => { setEditUser(null); setModalOpen(true) }}
-          className="btn-primary"
-        >
-          <Plus size={14} />
-          Create User
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '8px 14px', borderRadius: 6,
+              border: '1px solid #E5E7EB', background: 'white',
+              color: '#374151', fontSize: 13, fontWeight: 500,
+              cursor: exporting ? 'not-allowed' : 'pointer',
+              opacity: exporting ? 0.6 : 1
+            }}
+          >
+            <Download size={14} />
+            {exporting ? 'Exporting...' : 'Export CSV'}
+          </button>
+          <button
+            onClick={() => { setEditUser(null); setModalOpen(true) }}
+            className="btn-primary"
+          >
+            <Plus size={14} />
+            Create User
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
