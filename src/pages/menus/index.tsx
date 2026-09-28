@@ -83,8 +83,8 @@ function TreeRow({
           setDragTarget(null)
         }}
         className={[
-          'border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-grab',
-          isDragOver ? 'bg-indigo-50' : '',
+          'border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-grab',
+          isDragOver ? 'bg-[#FFF5F3]' : '',
         ].join(' ')}
       >
         {/* Label + expand */}
@@ -96,25 +96,25 @@ function TreeRow({
             {hasChildren ? (
               <button
                 onClick={() => setOpen((o) => !o)}
-                className="text-slate-400 hover:text-slate-700"
+                className="text-gray-400 hover:text-gray-700"
               >
                 {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
               </button>
             ) : (
               <span className="w-[14px]" />
             )}
-            <span className="font-medium text-slate-800">{node.label}</span>
+            <span className="font-medium text-gray-800">{node.label}</span>
           </div>
         </td>
 
         {/* Icon */}
-        <td className="px-4 py-3 text-sm text-slate-500">{node.icon ?? '—'}</td>
+        <td className="px-4 py-3 text-sm text-gray-500">{node.icon ?? '—'}</td>
 
         {/* Path */}
-        <td className="px-4 py-3 text-sm text-slate-500 font-mono">{node.path ?? '—'}</td>
+        <td className="px-4 py-3 text-sm text-gray-500 font-mono">{node.path ?? '—'}</td>
 
         {/* Parent */}
-        <td className="px-4 py-3 text-sm text-slate-500">
+        <td className="px-4 py-3 text-sm text-gray-500">
           {node.parent_id
             ? allMenus.find((m) => m.id === node.parent_id)?.label ?? '—'
             : '—'}
@@ -127,7 +127,7 @@ function TreeRow({
               'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
               node.is_active
                 ? 'bg-green-100 text-green-700'
-                : 'bg-slate-100 text-slate-500',
+                : 'bg-gray-100 text-gray-500',
             ].join(' ')}
           >
             {node.is_active ? 'Active' : 'Inactive'}
@@ -138,12 +138,12 @@ function TreeRow({
         <td className="px-4 py-3">
           <div className="flex flex-wrap gap-1">
             {node.roles.length === 0 ? (
-              <span className="text-xs text-slate-400">All</span>
+              <span className="text-xs text-gray-400">All</span>
             ) : (
               node.roles.map((r) => (
                 <span
                   key={r.id}
-                  className="rounded-full bg-indigo-100 text-indigo-700 px-2 py-0.5 text-xs"
+                  className="rounded-full bg-[#FFF5F3] text-[#D94F3D] px-2 py-0.5 text-xs"
                 >
                   {r.name}
                 </span>
@@ -158,21 +158,21 @@ function TreeRow({
             <button
               onClick={() => onToggleActive(node)}
               title={node.is_active ? 'Deactivate' : 'Activate'}
-              className="text-slate-400 hover:text-indigo-600 transition-colors"
+              className="text-gray-400 hover:text-[#D94F3D] transition-colors"
             >
               {node.is_active ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
             </button>
             <button
               onClick={() => onEdit(node)}
               title="Edit"
-              className="text-slate-400 hover:text-blue-600 transition-colors"
+              className="text-gray-400 hover:text-[#D94F3D] transition-colors"
             >
               <Pencil size={15} />
             </button>
             <button
               onClick={() => onDelete(node.id, node.label)}
               title="Delete"
-              className="text-slate-400 hover:text-red-600 transition-colors"
+              className="text-gray-400 hover:text-[#D94F3D] transition-colors"
             >
               <Trash2 size={15} />
             </button>
@@ -250,14 +250,14 @@ export function MenusPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Menu Management</h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-[#1A1A1A]">Menu Management</h1>
+          <p className="text-gray-500 text-sm mt-1">
             Manage navigation menus and their role assignments
           </p>
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+          className="flex items-center gap-2 rounded-md bg-[#D94F3D] px-4 py-2 text-sm font-medium text-white hover:bg-[#C0392B] transition-colors"
         >
           <Plus size={16} />
           Create Menu
@@ -267,18 +267,18 @@ export function MenusPage() {
       {/* Table */}
       <div className="rounded-xl border bg-white shadow-sm overflow-x-auto">
         {isLoading ? (
-          <div className="p-8 text-center text-slate-400">Loading menus…</div>
+          <div className="p-8 text-center text-gray-400">Loading menus…</div>
         ) : menus.length === 0 ? (
-          <div className="p-8 text-center text-slate-400">
+          <div className="p-8 text-center text-gray-400">
             No menus yet.{' '}
-            <button onClick={openCreate} className="text-indigo-600 hover:underline">
+            <button onClick={openCreate} className="text-[#D94F3D] hover:underline">
               Create the first one
             </button>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              <tr className="border-b bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                 <th className="px-4 py-3 text-left">Label</th>
                 <th className="px-4 py-3 text-left">Icon</th>
                 <th className="px-4 py-3 text-left">Path</th>

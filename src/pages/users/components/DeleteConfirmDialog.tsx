@@ -22,17 +22,17 @@ export function DeleteConfirmDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onCancel} />
-      <div className="relative w-full max-w-sm bg-white dark:bg-gray-900 rounded-xl shadow-xl p-6 space-y-4">
+      <div className="relative w-full max-w-sm bg-white rounded-xl shadow-xl p-6 space-y-4">
         <div className="flex items-center gap-3 text-red-600">
           <AlertTriangle className="h-6 w-6 flex-shrink-0" />
           <h2 className="text-lg font-semibold">{title}</h2>
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
+        <p className="text-sm text-gray-600">{description}</p>
         <div className="flex justify-end gap-3 pt-2">
           <button
             onClick={onCancel}
             disabled={isPending}
-            className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
           >
             Cancel
           </button>

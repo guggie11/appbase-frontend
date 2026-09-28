@@ -33,30 +33,30 @@ export function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+        <h1 className="text-2xl font-semibold text-gray-900 mb-1">
           Lupa Password
         </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        <p className="text-sm text-gray-500 mb-6">
           Masukkan email kamu untuk menerima link reset password.
         </p>
 
         {submitted ? (
-          <div className="text-sm text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950 rounded-lg px-4 py-3">
+          <div className="text-sm text-green-700 bg-green-50 rounded-lg px-4 py-3">
             Jika email terdaftar, link reset akan dikirim ke email kamu.
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Email
               </label>
               <input
                 {...register('email')}
                 type="email"
                 autoComplete="email"
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#D94F3D]"
                 placeholder="you@example.com"
               />
               {errors.email && (
@@ -67,7 +67,7 @@ export function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={forgotPassword.isPending}
-              className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium py-2.5 text-sm transition-colors"
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#D94F3D] hover:bg-[#C0392B] disabled:opacity-60 text-white font-medium py-2.5 text-sm transition-colors"
             >
               {forgotPassword.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               Kirim Link Reset
@@ -75,8 +75,8 @@ export function ForgotPasswordPage() {
           </form>
         )}
 
-        <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
-          <Link to="/login" className="text-indigo-600 hover:underline">
+        <div className="mt-4 text-center text-sm text-gray-500">
+          <Link to="/login" className="text-[#D94F3D] hover:underline">
             Kembali ke Login
           </Link>
         </div>

@@ -52,7 +52,7 @@ export function PermissionMatrix({ roleId, roleName }: PermissionMatrixProps) {
   if (loadingAll || loadingRole) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
+        <Loader2 className="h-6 w-6 animate-spin text-[#D94F3D]" />
       </div>
     )
   }
@@ -60,13 +60,13 @@ export function PermissionMatrix({ roleId, roleName }: PermissionMatrixProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-          Permissions for <span className="text-indigo-600">{roleName}</span>
+        <h3 className="text-sm font-semibold text-gray-700">
+          Permissions for <span className="text-[#D94F3D]">{roleName}</span>
         </h3>
         <button
           onClick={handleSave}
           disabled={updateMutation.isPending}
-          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors"
+          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg bg-[#D94F3D] text-white hover:bg-[#C0392B] disabled:opacity-60 transition-colors"
         >
           {updateMutation.isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -78,26 +78,26 @@ export function PermissionMatrix({ roleId, roleName }: PermissionMatrixProps) {
       </div>
 
       {Object.entries(grouped).map(([module, perms]) => (
-        <div key={module} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-          <div className="bg-gray-50 dark:bg-gray-800 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-            <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        <div key={module} className="border border-gray-200 rounded-lg overflow-hidden">
+          <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
               {module}
             </h4>
           </div>
-          <div className="divide-y divide-gray-50 dark:divide-gray-800">
+          <div className="divide-y divide-gray-50">
             {perms.map((p) => (
               <label
                 key={p.id}
-                className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors"
               >
                 <input
                   type="checkbox"
                   checked={selected.has(p.id)}
                   onChange={() => toggle(p.id)}
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  className="h-4 w-4 rounded border-gray-300 text-[#D94F3D] focus:ring-[#D94F3D]"
                 />
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">{p.name}</span>
+                  <span className="text-sm text-gray-700">{p.name}</span>
                   <span className="ml-2 text-xs text-gray-400">{p.slug}</span>
                 </div>
                 <span className="text-xs text-gray-400 capitalize">{p.action}</span>
@@ -112,7 +112,7 @@ export function PermissionMatrix({ roleId, roleName }: PermissionMatrixProps) {
       )}
 
       {updateMutation.isSuccess && (
-        <p className="text-xs text-green-600 dark:text-green-400">Permissions saved successfully!</p>
+        <p className="text-xs text-green-600">Permissions saved successfully!</p>
       )}
     </div>
   )
