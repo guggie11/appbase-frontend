@@ -59,7 +59,7 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
           parent_id: editMenu.parent_id ?? '',
           order_index: editMenu.order_index,
           is_active: editMenu.is_active,
-          role_ids: editMenu.roles.map((r) => r.id),
+          role_ids: (editMenu.roles ?? []).map((r) => r.id),
         }
       : {
           label: '',
