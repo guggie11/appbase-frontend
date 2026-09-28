@@ -36,5 +36,8 @@ export default defineConfig({
     alias: {
       'framer-motion': `${import.meta.dirname}/src/test/mocks/framer-motion.tsx`,
     },
+    env: {
+      VITE_API_URL: 'http://localhost:8000/api/v1',
+    },
   },
 })
