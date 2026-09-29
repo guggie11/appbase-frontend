@@ -1,6 +1,7 @@
 import { useLocation } from 'react-router-dom'
-import { Bell, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { Sidebar } from './Sidebar'
+import { NotificationBell } from './NotificationBell'
 import { useAuthStore } from '@/features/auth/store'
 import type { UserDetail } from '@/shared/api/types'
 
@@ -116,26 +117,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
           {/* Right actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-            <button
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: '50%',
-                background: '#F3F4F6',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#6B7280',
-                transition: 'background 150ms',
-              }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#E5E7EB' }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6' }}
-              title="Notifications"
-            >
-              <Bell size={16} />
-            </button>
+            <NotificationBell />
             <div
               style={{
                 width: 36,

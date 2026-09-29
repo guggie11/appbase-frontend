@@ -141,3 +141,17 @@ export interface Setting {
 export interface MenuTree extends Menu {
   children: MenuTree[]
 }
+
+export interface Notification {
+  id: string
+  title: string
+  message: string
+  type: 'info' | 'warning' | 'error' | 'success'
+  is_read: boolean
+  link: string | null
+  created_at: string
+}
+
+export interface UnreadCount {
+  count: number
+}
