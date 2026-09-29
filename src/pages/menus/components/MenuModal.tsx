@@ -17,7 +17,6 @@ const schema = z.object({
   icon: z.string().optional(),
   path: z.string().optional(),
   parent_id: z.string().optional(),
-  order_index: z.coerce.number().int().min(0),
   is_active: z.boolean(),
   role_ids: z.array(z.string()),
 })
@@ -57,7 +56,6 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
           icon: editMenu.icon ?? '',
           path: editMenu.path ?? '',
           parent_id: editMenu.parent_id ?? '',
-          order_index: editMenu.order_index,
           is_active: editMenu.is_active,
           role_ids: (editMenu.roles ?? []).map((r) => r.id),
         }
@@ -66,7 +64,6 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
           icon: '',
           path: '',
           parent_id: '',
-          order_index: 0,
           is_active: true,
           role_ids: [],
         },
@@ -83,7 +80,6 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
             icon: editMenu.icon ?? '',
             path: editMenu.path ?? '',
             parent_id: editMenu.parent_id ?? '',
-            order_index: editMenu.order_index,
             is_active: editMenu.is_active,
             role_ids: (editMenu.roles ?? []).map((r) => r.id.toString()),
           }
@@ -92,7 +88,6 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
             icon: '',
             path: '',
             parent_id: '',
-            order_index: 0,
             is_active: true,
             role_ids: [],
           })
@@ -120,7 +115,6 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
         icon: values.icon || null,
         path: values.path || null,
         parent_id: values.parent_id || null,
-        order_index: values.order_index,
         is_active: values.is_active,
         role_ids: values.role_ids,
       }
@@ -229,18 +223,6 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
                 </option>
               ))}
             </select>
-          </div>
-
-          {/* Order Index */}
-          <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1">
-              Order Index
-            </label>
-            <input
-              type="number"
-              {...register('order_index')}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D94F3D]"
-            />
           </div>
 
           {/* Is Active */}
