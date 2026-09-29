@@ -94,10 +94,11 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
 
   const activeStyle: React.CSSProperties = {
     ...baseStyle,
-    background: '#F3F4F6',
-    borderLeft: '3px solid #D94F3D',
-    paddingLeft: depth > 0 ? 25 : 13,
+    background: '#FFF5F3',
     color: '#D94F3D',
+    fontWeight: 600,
+    paddingLeft: depth > 0 ? 28 : 16,
+    boxShadow: 'inset 3px 0 0 #D94F3D',
   }
 
   const inactiveStyle: React.CSSProperties = {
@@ -111,7 +112,7 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
         <button
           onClick={() => setOpen((o) => !o)}
           title={collapsed ? item.label : undefined}
-          style={isChildActive ? activeStyle : inactiveStyle}
+          style={isChildActive ? { ...inactiveStyle, background: '#FFF5F3', color: '#D94F3D' } : inactiveStyle}
           onMouseEnter={(e) => {
             if (!isChildActive) (e.currentTarget as HTMLElement).style.background = '#F9FAFB'
           }}
@@ -129,7 +130,13 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
         </button>
 
         {open && !collapsed && (
-          <div style={{ marginLeft: 8, borderLeft: '1px solid #E5E7EB', paddingLeft: 4 }}>
+          <div style={{ 
+            marginLeft: 24, 
+            paddingLeft: 12,
+            borderLeft: '2px solid #F3F4F6',
+            marginTop: 2,
+            marginBottom: 2,
+          }}>
             {item.children.map((child) => (
               <NavItem
                 key={child.id}
