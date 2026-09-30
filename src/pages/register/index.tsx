@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import { Loader2, CheckCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useRegister } from '@/features/auth/queries'
+import { useThemeStore } from '@/shared/config/theme'
 import type { ApiErrorBody } from '@/shared/api/types'
 import axios from 'axios'
 
@@ -51,6 +52,7 @@ export function RegisterPage() {
   const register_mutation = useRegister()
   const [successEmail, setSuccessEmail] = useState<string | null>(null)
   const [apiError, setApiError] = useState<string | null>(null)
+  const { appName, appSubtitle, logoUrl, primaryColor } = useThemeStore()
 
   const {
     register,
@@ -88,7 +90,7 @@ export function RegisterPage() {
       <div
         style={{
           flex: '0 0 45%',
-          background: '#D94F3D',
+          background: primaryColor,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
@@ -99,27 +101,31 @@ export function RegisterPage() {
       >
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 48 }}>
-          <div
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 700,
-              fontSize: 20,
-            }}
-          >
-            A
-          </div>
+          {logoUrl ? (
+            <img src={logoUrl} alt={appName} style={{ width: 44, height: 44, objectFit: 'contain', borderRadius: 8 }} />
+          ) : (
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 700,
+                fontSize: 20,
+              }}
+            >
+              {appName.charAt(0).toUpperCase()}
+            </div>
+          )}
           <div>
             <div style={{ fontWeight: 700, fontSize: 18, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              APPBASE
+              {appName.toUpperCase()}
             </div>
             <div style={{ fontSize: 10, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-              App Template
+              {appSubtitle}
             </div>
           </div>
         </div>
@@ -201,23 +207,27 @@ export function RegisterPage() {
             <>
               {/* Mobile logo */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28 }}>
-                <div
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: '50%',
-                    background: '#D94F3D',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontWeight: 700,
-                  }}
-                >
-                  A
-                </div>
+                {logoUrl ? (
+                  <img src={logoUrl} alt={appName} style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 4 }} />
+                ) : (
+                  <div
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: '50%',
+                      background: primaryColor,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {appName.charAt(0).toUpperCase()}
+                  </div>
+                )}
                 <span style={{ fontWeight: 700, fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  APPBASE
+                  {appName.toUpperCase()}
                 </span>
               </div>
 
