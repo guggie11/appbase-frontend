@@ -16,6 +16,7 @@ import * as LucideIcons from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useMyMenu } from '@/features/menus/queries'
 import { useAuthStore } from '@/features/auth/store'
+import { useThemeStore } from '@/shared/config/theme'
 import type { MenuTree, UserDetail } from '@/shared/api/types'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -204,6 +205,7 @@ export function Sidebar() {
   const { data: menuTree, isLoading } = useMyMenu()
   const user = useAuthStore((s) => s.user)
   const userDetail = user as unknown as UserDetail | null
+  const { appName, appSubtitle, logoUrl, primaryColor } = useThemeStore()
 
   function toggleCollapse() {
     setCollapsed((c) => {
@@ -252,31 +254,39 @@ export function Sidebar() {
           overflow: 'hidden',
         }}
       >
-        {/* Red circle with "A" */}
-        <div
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: '50%',
-            background: '#D94F3D',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 700,
-            fontSize: 16,
-            flexShrink: 0,
-          }}
-        >
-          A
-        </div>
+        {/* Logo / branding */}
+        {logoUrl ? (
+          <img
+            src={logoUrl}
+            alt={appName}
+            style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 4, flexShrink: 0 }}
+          />
+        ) : (
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              background: primaryColor,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontWeight: 700,
+              fontSize: 16,
+              flexShrink: 0,
+            }}
+          >
+            {appName.charAt(0).toUpperCase()}
+          </div>
+        )}
         {!collapsed && (
           <div style={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
             <div style={{ fontWeight: 700, fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#1A1A1A', whiteSpace: 'nowrap' }}>
-              APPBASE
+              {appName.toUpperCase()}
             </div>
             <div style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#9CA3AF', whiteSpace: 'nowrap' }}>
-              APP TEMPLATE
+              {appSubtitle}
             </div>
           </div>
         )}

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { apiClient } from '@/shared/api/client'
 import { useAuthStore } from './store'
+import { useThemeStore } from '@/shared/config/theme'
 import type { ApiSuccess, TokenData, UserDetail } from '@/shared/api/types'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -10,6 +11,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const init = async () => {
       setLoading(true)
+      // Load theme first — no auth needed
+      await useThemeStore.getState().loadTheme()
       try {
         const refreshRes = await apiClient.post<ApiSuccess<{ access_token: string }>>(
           '/auth/refresh',
