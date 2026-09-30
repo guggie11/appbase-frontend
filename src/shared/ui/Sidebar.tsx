@@ -1,20 +1,22 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
-  ChevronDown,
   ChevronRight,
   ChevronLeft,
-  PanelLeft,
   Circle,
   LayoutDashboard,
   Users,
   Shield,
   Menu as MenuIcon,
+  ClipboardList,
+  Settings,
+  User,
 } from 'lucide-react'
 import * as LucideIcons from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useMyMenu } from '@/features/menus/queries'
-import type { MenuTree } from '@/shared/api/types'
+import { useAuthStore } from '@/features/auth/store'
+import type { MenuTree, UserDetail } from '@/shared/api/types'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -22,7 +24,6 @@ const SIDEBAR_KEY = 'sidebar_collapsed'
 
 function getLucideIcon(name: string | null): LucideIcon {
   if (!name) return Circle
-  // Convert kebab-case or PascalCase to PascalCase
   const pascal = name
     .split(/[-_\s]/)
     .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
@@ -35,12 +36,12 @@ function getLucideIcon(name: string | null): LucideIcon {
 
 function MenuSkeleton() {
   return (
-    <div className="space-y-2 px-3 pt-4">
+    <div className="space-y-1 px-3 pt-4">
       {[1, 2, 3, 4].map((i) => (
         <div
           key={i}
-          className="h-9 rounded-md bg-slate-700/50 animate-pulse"
-          style={{ animationDelay: `${i * 80}ms` }}
+          className="h-10 rounded-md animate-pulse"
+          style={{ background: '#F3F4F6', animationDelay: `${i * 80}ms` }}
         />
       ))}
     </div>
@@ -69,10 +70,41 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
       (c) => c.path !== null && location.pathname.startsWith(c.path),
     )
 
-  // Auto-open if a child is active
   useEffect(() => {
     if (isChildActive) setOpen(true)
   }, [isChildActive])
+
+  const baseStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    height: 44,
+    padding: '0 16px',
+    paddingLeft: depth > 0 ? 28 : 16,
+    borderRadius: 6,
+    fontSize: 14,
+    fontWeight: 500,
+    cursor: 'pointer',
+    transition: 'background 150ms',
+    border: 'none',
+    background: 'transparent',
+    width: '100%',
+    textDecoration: 'none',
+  }
+
+  const activeStyle: React.CSSProperties = {
+    ...baseStyle,
+    background: '#FFF5F3',
+    color: '#D94F3D',
+    fontWeight: 600,
+    paddingLeft: depth > 0 ? 28 : 16,
+    boxShadow: 'inset 3px 0 0 #D94F3D',
+  }
+
+  const inactiveStyle: React.CSSProperties = {
+    ...baseStyle,
+    color: '#6B7280',
+  }
 
   if (hasChildren) {
     return (
@@ -80,30 +112,31 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
         <button
           onClick={() => setOpen((o) => !o)}
           title={collapsed ? item.label : undefined}
-          className={[
-            'w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-            isChildActive
-              ? 'bg-indigo-700/30 text-indigo-300'
-              : 'text-slate-300 hover:bg-slate-700 hover:text-white',
-            depth > 0 ? 'pl-6' : '',
-          ].join(' ')}
+          style={isChildActive ? { ...inactiveStyle, background: '#FFF5F3', color: '#D94F3D' } : inactiveStyle}
+          onMouseEnter={(e) => {
+            if (!isChildActive) (e.currentTarget as HTMLElement).style.background = '#F9FAFB'
+          }}
+          onMouseLeave={(e) => {
+            if (!isChildActive) (e.currentTarget as HTMLElement).style.background = 'transparent'
+          }}
         >
-          <Icon size={18} className="shrink-0" />
+          <Icon size={16} className="shrink-0" />
           {!collapsed && (
             <>
-              <span className="flex-1 truncate text-left">{item.label}</span>
-              {open ? (
-                <ChevronDown size={14} className="shrink-0" />
-              ) : (
-                <ChevronRight size={14} className="shrink-0" />
-              )}
+              <span style={{ flex: 1, textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>
+              <ChevronRight size={12} style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 150ms' }} />
             </>
           )}
         </button>
 
-        {/* Accordion children */}
         {open && !collapsed && (
-          <div className="mt-0.5 ml-3 border-l border-slate-700 pl-2 space-y-0.5">
+          <div style={{ 
+            marginLeft: 24, 
+            paddingLeft: 12,
+            borderLeft: '2px solid #F3F4F6',
+            marginTop: 2,
+            marginBottom: 2,
+          }}>
             {item.children.map((child) => (
               <NavItem
                 key={child.id}
@@ -124,71 +157,38 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
     <Link
       to={item.path}
       title={collapsed ? item.label : undefined}
-      className={[
-        'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-        isActive
-          ? 'bg-indigo-600 text-white'
-          : 'text-slate-300 hover:bg-slate-700 hover:text-white',
-        depth > 0 ? 'pl-6' : '',
-      ].join(' ')}
+      style={isActive ? activeStyle : inactiveStyle}
+      onMouseEnter={(e) => {
+        if (!isActive) (e.currentTarget as HTMLElement).style.background = '#F9FAFB'
+      }}
+      onMouseLeave={(e) => {
+        if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'
+      }}
     >
-      <Icon size={18} className="shrink-0" />
-      {!collapsed && <span className="truncate">{item.label}</span>}
+      <Icon size={16} className="shrink-0" />
+      {!collapsed && (
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {item.label}
+        </span>
+      )}
     </Link>
   )
 }
 
-// ── Fallback static nav when API hasn't loaded yet ─────────────────────────
+// ── Fallback static nav ────────────────────────────────────────────────────
 
 const STATIC_NAV: MenuTree[] = [
-  {
-    id: 'dashboard',
-    label: 'Dashboard',
-    icon: 'layout-dashboard',
-    path: '/dashboard',
-    parent_id: null,
-    order_index: 0,
-    is_active: true,
-    roles: [],
-    children: [],
-  },
-  {
-    id: 'users',
-    label: 'Users',
-    icon: 'users',
-    path: '/users',
-    parent_id: null,
-    order_index: 1,
-    is_active: true,
-    roles: [],
-    children: [],
-  },
-  {
-    id: 'roles',
-    label: 'Roles',
-    icon: 'shield',
-    path: '/roles',
-    parent_id: null,
-    order_index: 2,
-    is_active: true,
-    roles: [],
-    children: [],
-  },
-  {
-    id: 'menus',
-    label: 'Menus',
-    icon: 'menu',
-    path: '/menus',
-    parent_id: null,
-    order_index: 3,
-    is_active: true,
-    roles: [],
-    children: [],
-  },
+  { id: 'dashboard', label: 'Dashboard', icon: 'layout-dashboard', path: '/dashboard', parent_id: null, order_index: 0, is_active: true, roles: [], children: [] },
+  { id: 'users', label: 'Users', icon: 'users', path: '/users', parent_id: null, order_index: 1, is_active: true, roles: [], children: [] },
+  { id: 'roles', label: 'Roles & Permissions', icon: 'shield', path: '/roles', parent_id: null, order_index: 2, is_active: true, roles: [], children: [] },
+  { id: 'menus', label: 'Menu Management', icon: 'menu', path: '/menus', parent_id: null, order_index: 3, is_active: true, roles: [], children: [] },
+  { id: 'audit-logs', label: 'Audit Log', icon: 'clipboard-list', path: '/audit-logs', parent_id: null, order_index: 4, is_active: true, roles: [], children: [] },
+  { id: 'settings', label: 'Settings', icon: 'settings', path: '/settings', parent_id: null, order_index: 5, is_active: true, roles: [], children: [] },
+  { id: 'profile', label: 'Profile', icon: 'user', path: '/profile', parent_id: null, order_index: 6, is_active: true, roles: [], children: [] },
 ]
 
-// Ensure lucide icons from static nav actually exist — suppress unused import warning
-void [LayoutDashboard, Users, Shield, MenuIcon]
+// Ensure lucide icons from static nav actually exist
+void [LayoutDashboard, Users, Shield, MenuIcon, ClipboardList, Settings, User]
 
 // ── Sidebar ────────────────────────────────────────────────────────────────
 
@@ -202,40 +202,145 @@ export function Sidebar() {
   })
 
   const { data: menuTree, isLoading } = useMyMenu()
+  const user = useAuthStore((s) => s.user)
+  const userDetail = user as unknown as UserDetail | null
 
   function toggleCollapse() {
     setCollapsed((c) => {
       const next = !c
       try {
         localStorage.setItem(SIDEBAR_KEY, String(next))
-      } catch {
-        /* noop */
-      }
+      } catch { /* noop */ }
       return next
     })
   }
 
   const nav = menuTree && menuTree.length > 0 ? menuTree : STATIC_NAV
+  const width = collapsed ? 64 : 220
+
+  const initials = user?.name
+    ? user.name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2)
+    : '?'
 
   return (
     <aside
-      className={[
-        'relative flex flex-col bg-slate-800 text-white h-screen transition-all duration-300 ease-in-out',
-        collapsed ? 'w-16' : 'w-64',
-      ].join(' ')}
+      style={{
+        width,
+        minWidth: width,
+        maxWidth: width,
+        background: '#FFFFFF',
+        borderRight: '1px solid #E5E7EB',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        transition: 'width 300ms ease-in-out, min-width 300ms ease-in-out',
+        overflow: 'hidden',
+        position: 'relative',
+        flexShrink: 0,
+      }}
     >
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b border-slate-700 min-h-[64px]">
-        <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
-          <PanelLeft size={16} />
+      {/* Logo area + collapse button */}
+      <div
+        style={{
+          padding: '0 12px 0 16px',
+          height: 64,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          borderBottom: '1px solid #E5E7EB',
+          flexShrink: 0,
+          overflow: 'hidden',
+        }}
+      >
+        {/* Red circle with "A" */}
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: '50%',
+            background: '#D94F3D',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontWeight: 700,
+            fontSize: 16,
+            flexShrink: 0,
+          }}
+        >
+          A
         </div>
         {!collapsed && (
-          <span className="font-bold text-lg tracking-tight">Appbase</span>
+          <div style={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#1A1A1A', whiteSpace: 'nowrap' }}>
+              APPBASE
+            </div>
+            <div style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#9CA3AF', whiteSpace: 'nowrap' }}>
+              APP TEMPLATE
+            </div>
+          </div>
         )}
+        {/* Collapse toggle — top right of logo area */}
+        <button
+          onClick={toggleCollapse}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 24,
+            height: 24,
+            borderRadius: 6,
+            border: '1px solid #E5E7EB',
+            background: 'transparent',
+            cursor: 'pointer',
+            color: '#9CA3AF',
+            flexShrink: 0,
+            transition: 'color 150ms, background 150ms',
+          }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#D94F3D'; (e.currentTarget as HTMLElement).style.background = '#F9FAFB' }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#9CA3AF'; (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+        >
+          {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
       </div>
 
+      {/* New Feature CTA */}
+      {!collapsed && (
+        <div style={{ padding: '12px 12px 4px' }}>
+          <button
+            style={{
+              width: '100%',
+              padding: '8px 16px',
+              background: '#D94F3D',
+              color: 'white',
+              fontWeight: 600,
+              fontSize: 13,
+              borderRadius: 6,
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              transition: 'background 150ms',
+            }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#C0392B' }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#D94F3D' }}
+          >
+            New Feature +
+          </button>
+        </div>
+      )}
+
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-0.5">
+      <nav style={{ flex: 1, overflowY: 'auto', padding: '8px 8px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {/* Section label */}
+        {!collapsed && (
+          <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#9CA3AF', margin: '8px 0 4px 8px' }}>
+            Navigation
+          </div>
+        )}
         {isLoading ? (
           <MenuSkeleton />
         ) : (
@@ -245,15 +350,42 @@ export function Sidebar() {
         )}
       </nav>
 
-      {/* Collapse toggle */}
-      <div className="border-t border-slate-700 p-2">
-        <button
-          onClick={toggleCollapse}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="w-full flex items-center justify-center rounded-md p-2 text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
-        >
-          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </button>
+      {/* Bottom: User info + collapse toggle */}
+      <div style={{ borderTop: '1px solid #E5E7EB', flexShrink: 0 }}>
+        {/* User info */}
+        {!collapsed && user && (
+          <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid #F3F4F6' }}>
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: '50%',
+                background: '#F3F4F6',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 12,
+                fontWeight: 700,
+                color: '#D94F3D',
+                flexShrink: 0,
+                overflow: 'hidden',
+              }}
+            >
+              {userDetail?.avatar
+                ? <img src={userDetail.avatar} style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: '50%' }} alt="" />
+                : initials}
+            </div>
+            <div style={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#1A1A1A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {user.name}
+              </div>
+              <div style={{ fontSize: 11, color: '#9CA3AF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {user.email}
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </aside>
   )

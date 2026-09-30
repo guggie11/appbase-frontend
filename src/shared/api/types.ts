@@ -75,10 +75,7 @@ export interface Menu {
   parent_id: string | null
   order_index: number
   is_active: boolean
-  roles: Role[]
-}
-
-export interface MenuTree extends Menu {
+  roles?: Role[]
   children: MenuTree[]
 }
 
@@ -139,4 +136,22 @@ export interface Setting {
   type: string
   is_public: boolean
   is_secret: boolean
+}
+
+export interface MenuTree extends Menu {
+  children: MenuTree[]
+}
+
+export interface Notification {
+  id: string
+  title: string
+  message: string
+  type: 'info' | 'warning' | 'error' | 'success'
+  is_read: boolean
+  link: string | null
+  created_at: string
+}
+
+export interface UnreadCount {
+  count: number
 }

@@ -55,6 +55,13 @@ export const router = createBrowserRouter([
     },
   },
   {
+    path: '/register',
+    lazy: async () => {
+      const { RegisterPage } = await import('../pages/register')
+      return { Component: RegisterPage }
+    },
+  },
+  {
     path: '/forgot-password',
     lazy: async () => {
       const { ForgotPasswordPage } = await import('../pages/forgot-password')
@@ -73,6 +80,13 @@ export const router = createBrowserRouter([
     lazy: async () => {
       const { VerifyEmailPage } = await import('../pages/verify-email')
       return { Component: VerifyEmailPage }
+    },
+  },
+  {
+    path: '/accept-invitation',
+    lazy: async () => {
+      const { AcceptInvitationPage } = await import('../pages/accept-invitation')
+      return { Component: AcceptInvitationPage }
     },
   },
   {

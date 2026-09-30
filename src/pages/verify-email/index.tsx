@@ -41,23 +41,23 @@ export function VerifyEmailPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 text-center">
         {status === 'loading' && (
           <div className="flex flex-col items-center gap-3">
-            <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-            <p className="text-gray-600 dark:text-gray-400">Memverifikasi email…</p>
+            <Loader2 className="h-8 w-8 animate-spin text-[#D94F3D]" />
+            <p className="text-gray-600">Memverifikasi email…</p>
           </div>
         )}
 
         {status === 'success' && (
           <div className="space-y-4">
-            <p className="text-green-600 dark:text-green-400 text-lg font-medium">
+            <p className="text-green-600 text-lg font-medium">
               Email berhasil diverifikasi!
             </p>
             <Link
               to="/login"
-              className="inline-block text-indigo-600 hover:underline text-sm"
+              className="inline-block text-[#D94F3D] hover:underline text-sm"
             >
               Masuk ke akun
             </Link>
@@ -70,7 +70,7 @@ export function VerifyEmailPage() {
               Token tidak valid atau sudah kadaluarsa.
             </p>
             {resendDone ? (
-              <p className="text-sm text-green-600 dark:text-green-400">
+              <p className="text-sm text-green-600">
                 Email verifikasi telah dikirim ulang.
               </p>
             ) : (
@@ -80,12 +80,12 @@ export function VerifyEmailPage() {
                   value={resendEmail}
                   onChange={(e) => setResendEmail(e.target.value)}
                   placeholder="Masukkan email kamu"
-                  className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#D94F3D]"
                 />
                 <button
                   onClick={handleResend}
                   disabled={resendVerification.isPending}
-                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium py-2.5 text-sm transition-colors"
+                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#D94F3D] hover:bg-[#C0392B] disabled:opacity-60 text-white font-medium py-2.5 text-sm transition-colors"
                 >
                   {resendVerification.isPending && (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -94,7 +94,7 @@ export function VerifyEmailPage() {
                 </button>
               </div>
             )}
-            <Link to="/login" className="block text-indigo-600 hover:underline text-sm">
+            <Link to="/login" className="block text-[#D94F3D] hover:underline text-sm">
               Kembali ke Login
             </Link>
           </div>

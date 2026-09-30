@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -17,7 +17,6 @@ const schema = z.object({
   icon: z.string().optional(),
   path: z.string().optional(),
   parent_id: z.string().optional(),
-  order_index: z.coerce.number().int().min(0),
   is_active: z.boolean(),
   role_ids: z.array(z.string()),
 })
@@ -57,22 +56,44 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
           icon: editMenu.icon ?? '',
           path: editMenu.path ?? '',
           parent_id: editMenu.parent_id ?? '',
-          order_index: editMenu.order_index,
           is_active: editMenu.is_active,
-          role_ids: editMenu.roles.map((r) => r.id),
+          role_ids: (editMenu.roles ?? []).map((r) => r.id),
         }
       : {
           label: '',
           icon: '',
           path: '',
           parent_id: '',
-          order_index: 0,
           is_active: true,
           role_ids: [],
         },
   })
 
   const selectedRoleIds = watch('role_ids')
+
+  // Reset form setiap kali modal dibuka atau editMenu berubah
+  useEffect(() => {
+    if (open) {
+      reset(editMenu
+        ? {
+            label: editMenu.label,
+            icon: editMenu.icon ?? '',
+            path: editMenu.path ?? '',
+            parent_id: editMenu.parent_id ?? '',
+            is_active: editMenu.is_active,
+            role_ids: (editMenu.roles ?? []).map((r) => r.id.toString()),
+          }
+        : {
+            label: '',
+            icon: '',
+            path: '',
+            parent_id: '',
+            is_active: true,
+            role_ids: [],
+          })
+      setError(null)
+    }
+  }, [open, editMenu, reset])
 
   function toggleRole(id: string) {
     const current = watch('role_ids')
@@ -94,7 +115,6 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
         icon: values.icon || null,
         path: values.path || null,
         parent_id: values.parent_id || null,
-        order_index: values.order_index,
         is_active: values.is_active,
         role_ids: values.role_ids,
       }
@@ -130,12 +150,12 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-semibold text-slate-900">
+          <h2 className="text-lg font-semibold text-[#1A1A1A]">
             {editMenu ? 'Edit Menu' : 'Create Menu'}
           </h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 transition-colors"
+            className="text-gray-400 hover:text-[#4B5563] transition-colors"
           >
             <X size={20} />
           </button>
@@ -150,13 +170,13 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
         <form onSubmit={handleSubmit(onSubmit as SubmitHandler<FormValues>)} className="space-y-4">
           {/* Label */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-[#374151] mb-1">
               Label <span className="text-red-500">*</span>
             </label>
             <input
               {...register('label')}
               placeholder="Menu label"
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D94F3D]"
             />
             {errors.label && (
               <p className="mt-1 text-xs text-red-600">{errors.label.message}</p>
@@ -165,36 +185,36 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
 
           {/* Icon */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-[#374151] mb-1">
               Icon (Lucide name)
             </label>
             <input
               {...register('icon')}
               placeholder="e.g. layout-dashboard"
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D94F3D]"
             />
           </div>
 
           {/* Path */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-[#374151] mb-1">
               Path
             </label>
             <input
               {...register('path')}
               placeholder="e.g. /dashboard"
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D94F3D]"
             />
           </div>
 
           {/* Parent */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-[#374151] mb-1">
               Parent Menu
             </label>
             <select
               {...register('parent_id')}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D94F3D]"
             >
               <option value="">— Top level —</option>
               {parentOptions.map((m) => (
@@ -205,34 +225,22 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
             </select>
           </div>
 
-          {/* Order Index */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Order Index
-            </label>
-            <input
-              type="number"
-              {...register('order_index')}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-
           {/* Is Active */}
           <div className="flex items-center gap-2">
             <input
               id="is_active"
               type="checkbox"
               {...register('is_active')}
-              className="h-4 w-4 rounded border-slate-300 text-indigo-600"
+              className="h-4 w-4 rounded border-gray-300 text-[#D94F3D]"
             />
-            <label htmlFor="is_active" className="text-sm font-medium text-slate-700">
+            <label htmlFor="is_active" className="text-sm font-medium text-[#374151]">
               Active
             </label>
           </div>
 
           {/* Roles */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-[#374151] mb-2">
               Roles
             </label>
             <div className="flex flex-wrap gap-2">
@@ -246,8 +254,8 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
                     className={[
                       'rounded-full px-3 py-1 text-xs font-medium border transition-colors',
                       selected
-                        ? 'bg-indigo-600 text-white border-indigo-600'
-                        : 'bg-white text-slate-600 border-slate-300 hover:border-indigo-400',
+                        ? 'bg-[#D94F3D] text-white border-[#D94F3D]'
+                        : 'bg-white text-[#4B5563] border-gray-300 hover:border-[#D94F3D]',
                     ].join(' ')}
                   >
                     {role.name}
@@ -262,14 +270,14 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+              className="rounded-md px-4 py-2 text-sm font-medium text-[#4B5563] hover:bg-gray-100 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+              className="rounded-md bg-[#D94F3D] px-4 py-2 text-sm font-medium text-white hover:bg-[#C0392B] transition-colors disabled:opacity-50"
             >
               {isSubmitting ? 'Saving…' : editMenu ? 'Update' : 'Create'}
             </button>

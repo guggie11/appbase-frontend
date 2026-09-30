@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { type AxiosRequestConfig } from 'axios'
 import { useAuthStore } from '@/features/auth/store'
 
 const BASE_URL =
@@ -56,6 +56,9 @@ function processQueue(error: unknown, token: string | null = null) {
   failedQueue.length = 0
 }
 
+// Skip refresh interceptor for these paths
+const SKIP_REFRESH_PATHS = ['/auth/refresh', '/auth/login']
+
 // Response interceptor — 401 → refresh token
 apiClient.interceptors.response.use(
   (response) => response,
@@ -66,7 +69,9 @@ apiClient.interceptors.response.use(
       _retry?: boolean
     }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const requestUrl = originalRequest.url ?? ''
+    const isSkipped = SKIP_REFRESH_PATHS.some((p) => requestUrl.includes(p))
+    if (error.response?.status === 401 && !originalRequest._retry && !isSkipped) {
       if (isRefreshing) {
         return new Promise<string>((resolve, reject) => {
           failedQueue.push({ resolve, reject })
@@ -110,3 +115,8 @@ apiClient.interceptors.response.use(
     return Promise.reject(error)
   },
 )
+
+// Orval mutator: wraps apiClient as a callable function
+export function apiClientMutator<T>(config: AxiosRequestConfig): Promise<T> {
+  return apiClient(config).then((res) => res.data)
+}

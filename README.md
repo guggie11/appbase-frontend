@@ -1,3 +1,5 @@
+[![CI](https://github.com/guggie11/appbase-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/guggie11/appbase-frontend/actions/workflows/ci.yml)
+
 # Appbase Frontend
 
 React 19 + TypeScript + Vite + Tailwind CSS v4 frontend skeleton using Feature-Sliced Design (FSD).
@@ -48,6 +50,18 @@ pnpm dev
 ```bash
 pnpm build
 ```
+
+## API Client Generation
+
+Backend harus berjalan atau `openapi.json` tersedia di `../appbase-backend/openapi.json`.
+
+```bash
+# Generate (atau update ulang) TypeScript client dari OpenAPI schema backend
+pnpm gen:api
+```
+
+File hasil generate disimpan di `src/shared/api/generated/` (di-gitignore, jangan di-commit).
+Re-generate setiap kali ada perubahan di backend API.
 
 ## Generate API client
 
