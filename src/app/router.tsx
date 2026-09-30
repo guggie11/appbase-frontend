@@ -90,6 +90,20 @@ export const router = createBrowserRouter([
     },
   },
   {
+    path: '/oauth/callback',
+    lazy: async () => {
+      const { OAuthCallbackPage } = await import('../pages/oauth-callback')
+      return { Component: OAuthCallbackPage }
+    },
+  },
+  {
+    path: '/oauth/error',
+    lazy: async () => {
+      const { OAuthErrorPage } = await import('../pages/oauth-error')
+      return { Component: OAuthErrorPage }
+    },
+  },
+  {
     path: '/forbidden',
     lazy: async () => {
       const { ForbiddenPage } = await import('../pages/forbidden')
