@@ -85,7 +85,7 @@ export function NotificationBell() {
               position: 'absolute',
               top: 0,
               right: 0,
-              background: '#D94F3D',
+              background: '#d8452a',
               color: 'white',
               fontSize: 10,
               fontWeight: 700,
@@ -135,7 +135,7 @@ export function NotificationBell() {
               onClick={() => markAllRead.mutate()}
               style={{
                 fontSize: 12,
-                color: '#D94F3D',
+                color: '#d8452a',
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',

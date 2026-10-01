@@ -16,7 +16,7 @@ interface ThemeState {
 export const useThemeStore = create<ThemeState>((set, get) => ({
   appName: 'Appbase',
   appSubtitle: 'App Template',
-  primaryColor: '#D94F3D',
+  primaryColor: '#d8452a',
   logoUrl: '',
   faviconUrl: '',
   isLoaded: false,
@@ -31,7 +31,7 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
       const state = {
         appName: map.app_name || 'Appbase',
         appSubtitle: map.app_subtitle || 'App Template',
-        primaryColor: map.primary_color || '#D94F3D',
+        primaryColor: map.primary_color || '#d8452a',
         logoUrl: map.logo_url || '',
         faviconUrl: map.favicon_url || '',
         isLoaded: true,

@@ -84,7 +84,7 @@ export function UsersPage() {
         cell: ({ row }) => {
           const user = row.original
           return (
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#FFF5F3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#D94F3D', overflow: 'hidden' }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#FFF5F3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#d8452a', overflow: 'hidden' }}>
               {user.avatar
                 ? <img src={user.avatar} style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: '50%' }} alt="" />
                 : (user.name?.[0]?.toUpperCase() ?? '?')}
@@ -133,7 +133,7 @@ export function UsersPage() {
         cell: ({ row }) => (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
             {row.original.roles?.map((r) => (
-              <span key={r.id} style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 9999, fontSize: 11, fontWeight: 500, background: '#FFF5F3', color: '#D94F3D' }}>
+              <span key={r.id} style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 9999, fontSize: 11, fontWeight: 500, background: '#FFF5F3', color: '#d8452a' }}>
                 {r.name}
               </span>
             ))}
@@ -159,7 +159,7 @@ export function UsersPage() {
               <button
                 onClick={() => { setEditUser(user); setModalOpen(true) }}
                 style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', transition: 'color 150ms, background 150ms' }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; (e.currentTarget as HTMLElement).style.color = '#D94F3D' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; (e.currentTarget as HTMLElement).style.color = '#d8452a' }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
               >
                 <Pencil size={14} />

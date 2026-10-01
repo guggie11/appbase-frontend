@@ -91,7 +91,7 @@ function ValueCell({ setting }: { setting: Setting }) {
               onChange={(e) => setSecretDraft(e.target.value)}
               placeholder="New value"
               style={{ border: '1px solid #E5E7EB', borderRadius: 6, padding: '4px 32px 4px 8px', fontSize: 12, width: 140, outline: 'none' }}
-              onFocus={(e) => { e.target.style.borderColor = '#D94F3D'; e.target.style.boxShadow = '0 0 0 3px rgba(217,79,61,0.1)' }}
+              onFocus={(e) => { e.target.style.borderColor = '#d8452a'; e.target.style.boxShadow = '0 0 0 3px rgba(216,69,42,0.1)' }}
               onBlur={(e) => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none' }}
               onKeyDown={(e) => { if (e.key === 'Enter') commitSecret() }}
             />
@@ -106,7 +106,7 @@ function ValueCell({ setting }: { setting: Setting }) {
           <button
             onClick={commitSecret}
             disabled={!secretDraft || updateSetting.isPending}
-            style={{ padding: '4px 10px', fontSize: 11, background: '#D94F3D', color: 'white', border: 'none', borderRadius: 6, cursor: !secretDraft ? 'not-allowed' : 'pointer', opacity: !secretDraft ? 0.4 : 1, display: 'flex', alignItems: 'center' }}
+            style={{ padding: '4px 10px', fontSize: 11, background: '#d8452a', color: 'white', border: 'none', borderRadius: 6, cursor: !secretDraft ? 'not-allowed' : 'pointer', opacity: !secretDraft ? 0.4 : 1, display: 'flex', alignItems: 'center' }}
           >
             {updateSetting.isPending ? <Loader2 size={10} className="animate-spin" /> : 'Update'}
           </button>
@@ -126,7 +126,7 @@ function ValueCell({ setting }: { setting: Setting }) {
           if (e.key === 'Enter') commitInline()
           if (e.key === 'Escape') { setDraft(setting.value ?? ''); setEditing(false) }
         }}
-        style={{ border: '1px solid #D94F3D', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', width: '100%', maxWidth: 280, boxShadow: '0 0 0 3px rgba(217,79,61,0.1)' }}
+        style={{ border: '1px solid #d8452a', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', width: '100%', maxWidth: 280, boxShadow: '0 0 0 3px rgba(216,69,42,0.1)' }}
       />
     )
   }
@@ -136,11 +136,11 @@ function ValueCell({ setting }: { setting: Setting }) {
       onClick={() => setEditing(true)}
       title="Click to edit"
       style={{ textAlign: 'left', fontSize: 13, color: '#374151', background: 'transparent', border: 'none', cursor: 'text', maxWidth: 280, width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: 0 }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#D94F3D' }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#d8452a' }}
       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#374151' }}
     >
       {updateSetting.isPending ? (
-        <Loader2 size={14} className="animate-spin" style={{ color: '#D94F3D' }} />
+        <Loader2 size={14} className="animate-spin" style={{ color: '#d8452a' }} />
       ) : (
         <span>{setting.value ?? <span style={{ color: '#9CA3AF', fontStyle: 'italic' }}>empty</span>}</span>
       )}
@@ -153,7 +153,7 @@ function ValueCell({ setting }: { setting: Setting }) {
 const DEFAULT_VALUES = {
   appName: 'Appbase',
   appSubtitle: 'App Template',
-  primaryColor: '#D94F3D',
+  primaryColor: '#d8452a',
   logoUrl: '',
   faviconUrl: '',
 }
@@ -260,7 +260,7 @@ function AppearanceSection() {
             value={appName}
             onChange={(e) => updateField('appName', e.target.value)}
             style={inputStyle}
-            onFocus={(e) => { e.target.style.borderColor = '#D94F3D'; e.target.style.boxShadow = '0 0 0 3px rgba(217,79,61,0.1)' }}
+            onFocus={(e) => { e.target.style.borderColor = '#d8452a'; e.target.style.boxShadow = '0 0 0 3px rgba(216,69,42,0.1)' }}
             onBlur={(e) => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none' }}
             placeholder="Appbase"
           />
@@ -276,7 +276,7 @@ function AppearanceSection() {
             value={appSubtitle}
             onChange={(e) => updateField('appSubtitle', e.target.value)}
             style={inputStyle}
-            onFocus={(e) => { e.target.style.borderColor = '#D94F3D'; e.target.style.boxShadow = '0 0 0 3px rgba(217,79,61,0.1)' }}
+            onFocus={(e) => { e.target.style.borderColor = '#d8452a'; e.target.style.boxShadow = '0 0 0 3px rgba(216,69,42,0.1)' }}
             onBlur={(e) => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none' }}
             placeholder="App Template"
           />
@@ -293,13 +293,13 @@ function AppearanceSection() {
               value={primaryColor}
               onChange={(e) => updateField('primaryColor', e.target.value)}
               style={{ ...inputStyle, width: 120 }}
-              onFocus={(e) => { e.target.style.borderColor = '#D94F3D'; e.target.style.boxShadow = '0 0 0 3px rgba(217,79,61,0.1)' }}
+              onFocus={(e) => { e.target.style.borderColor = '#d8452a'; e.target.style.boxShadow = '0 0 0 3px rgba(216,69,42,0.1)' }}
               onBlur={(e) => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none' }}
-              placeholder="#D94F3D"
+              placeholder="#d8452a"
             />
             <input
               type="color"
-              value={/^#[0-9A-Fa-f]{6}$/.test(primaryColor) ? primaryColor : '#D94F3D'}
+              value={/^#[0-9A-Fa-f]{6}$/.test(primaryColor) ? primaryColor : '#d8452a'}
               onChange={(e) => updateField('primaryColor', e.target.value)}
               style={{ width: 36, height: 36, padding: 2, border: '1px solid #E5E7EB', borderRadius: 6, cursor: 'pointer', background: 'white' }}
               title="Pick a color"
@@ -309,7 +309,7 @@ function AppearanceSection() {
                 width: 36,
                 height: 36,
                 borderRadius: 6,
-                background: /^#[0-9A-Fa-f]{6}$/.test(primaryColor) ? primaryColor : '#D94F3D',
+                background: /^#[0-9A-Fa-f]{6}$/.test(primaryColor) ? primaryColor : '#d8452a',
                 border: '1px solid #E5E7EB',
                 flexShrink: 0,
               }}
@@ -400,9 +400,9 @@ function AppearanceSection() {
             type="button"
             onClick={handleSave}
             disabled={saving}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', fontSize: 13, fontWeight: 600, background: '#D94F3D', color: 'white', border: 'none', borderRadius: 6, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}
-            onMouseEnter={(e) => { if (!saving) (e.currentTarget as HTMLElement).style.background = '#C0392B' }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#D94F3D' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', fontSize: 13, fontWeight: 600, background: '#d8452a', color: 'white', border: 'none', borderRadius: 6, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}
+            onMouseEnter={(e) => { if (!saving) (e.currentTarget as HTMLElement).style.background = '#c0402a' }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#d8452a' }}
           >
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
             Save Changes

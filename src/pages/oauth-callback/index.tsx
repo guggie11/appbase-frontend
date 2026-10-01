@@ -47,7 +47,7 @@ export function OAuthCallbackPage() {
           minHeight: '100vh',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#F5F5F5',
+          background: '#e9eaea',
           fontFamily: 'Inter, sans-serif',
           padding: '24px',
         }}
@@ -78,7 +78,7 @@ export function OAuthCallbackPage() {
               alignItems: 'center',
               justifyContent: 'center',
               padding: '10px 24px',
-              background: '#D94F3D',
+              background: '#d8452a',
               color: 'white',
               fontWeight: 600,
               fontSize: 14,
@@ -102,13 +102,13 @@ export function OAuthCallbackPage() {
         minHeight: '100vh',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#F5F5F5',
+        background: '#e9eaea',
         fontFamily: 'Inter, sans-serif',
         flexDirection: 'column',
         gap: 16,
       }}
     >
-      <Loader2 size={40} style={{ color: '#D94F3D', animation: 'spin 1s linear infinite' }} />
+      <Loader2 size={40} style={{ color: '#d8452a', animation: 'spin 1s linear infinite' }} />
       <p style={{ fontSize: 15, color: '#6B7280', fontWeight: 500 }}>Completing sign in...</p>
     </div>
   )

@@ -12,7 +12,7 @@ export function OAuthErrorPage() {
         minHeight: '100vh',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#F5F5F5',
+        background: '#e9eaea',
         fontFamily: 'Inter, sans-serif',
         padding: '24px',
       }}
@@ -43,7 +43,7 @@ export function OAuthErrorPage() {
             alignItems: 'center',
             justifyContent: 'center',
             padding: '10px 24px',
-            background: '#D94F3D',
+            background: '#d8452a',
             color: 'white',
             fontWeight: 600,
             fontSize: 14,

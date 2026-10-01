@@ -56,7 +56,7 @@ export function ForgotPasswordPage() {
                 {...register('email')}
                 type="email"
                 autoComplete="email"
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#D94F3D]"
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#d8452a]"
                 placeholder="you@example.com"
               />
               {errors.email && (
@@ -67,7 +67,7 @@ export function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={forgotPassword.isPending}
-              className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#D94F3D] hover:bg-[#C0392B] disabled:opacity-60 text-white font-medium py-2.5 text-sm transition-colors"
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#d8452a] hover:bg-[#c0402a] disabled:opacity-60 text-white font-medium py-2.5 text-sm transition-colors"
             >
               {forgotPassword.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               Kirim Link Reset
@@ -76,7 +76,7 @@ export function ForgotPasswordPage() {
         )}
 
         <div className="mt-4 text-center text-sm text-gray-500">
-          <Link to="/login" className="text-[#D94F3D] hover:underline">
+          <Link to="/login" className="text-[#d8452a] hover:underline">
             Kembali ke Login
           </Link>
         </div>

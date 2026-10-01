@@ -3,16 +3,16 @@ import { ShieldOff } from 'lucide-react'
 
 export function ForbiddenPage() {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F5F5F5', padding: '0 24px' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#e9eaea', padding: '0 24px' }}>
       <div style={{ textAlign: 'center', maxWidth: 360, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
         {/* Icon */}
         <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <ShieldOff size={36} style={{ color: '#D94F3D' }} />
+          <ShieldOff size={36} style={{ color: '#d8452a' }} />
         </div>
 
         <div>
           <div style={{ fontSize: 64, fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>403</div>
-          <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#D94F3D', marginTop: 8 }}>
+          <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#d8452a', marginTop: 8 }}>
             Access Forbidden
           </div>
         </div>
@@ -30,13 +30,13 @@ export function ForbiddenPage() {
             fontSize: 14,
             fontWeight: 600,
             borderRadius: 6,
-            background: '#D94F3D',
+            background: '#d8452a',
             color: 'white',
             textDecoration: 'none',
             transition: 'background 150ms',
           }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#C0392B' }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#D94F3D' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#c0402a' }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#d8452a' }}
         >
           Back to Dashboard
         </Link>
