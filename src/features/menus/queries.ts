@@ -85,7 +85,7 @@ export function useUpdateMenuOrder() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, order_index }: { id: string; order_index: number }) => {
-      const res = await apiClient.put<ApiSuccess<Menu>>(`/menus/${id}`, {
+      const res = await apiClient.put<ApiSuccess<Menu>>(`/menus/${id}/order`, {
         order_index,
       })
       return res.data.data
