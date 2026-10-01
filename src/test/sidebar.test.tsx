@@ -11,6 +11,12 @@ const NAV: MenuTree[] = [
     id: 'dashboard', label: 'Dashboard', icon: 'layout-dashboard', path: '/dashboard',
     parent_id: null, order_index: 0, is_active: true, roles: [], children: [],
   },
+  // The real backend ships a Profile menu; the sidebar must not render it
+  // alongside the user card, which already links there.
+  {
+    id: 'profile', label: 'Profile', icon: 'user', path: '/profile',
+    parent_id: null, order_index: 1, is_active: true, roles: [], children: [],
+  },
   {
     id: 'admin', label: 'Administration', icon: 'shield', path: null,
     parent_id: null, order_index: 1, is_active: true, roles: [],
@@ -75,7 +81,57 @@ describe('Sidebar collapse control', () => {
   })
 })
 
+describe('Sidebar Archie v4 spec', () => {
+  it('elevates only the active item, never its parent', async () => {
+    renderSidebar('/users')
+
+    const parent = screen.getByRole('button', { name: /administration/i })
+    // The parent of the active child must stay flat — a raised white card
+    // there outranks the item that is actually selected.
+    expect(parent.style.boxShadow).toBe('')
+    expect(parent.style.background).not.toBe('#ffffff')
+  })
+
+  it('uses Archie elevation on the active top-level card', () => {
+    renderSidebar('/dashboard')
+    const active = screen.getByRole('link', { name: 'Dashboard' })
+    expect(active.style.boxShadow).toBe('0 1px 2px rgba(27,28,30,0.06)')
+  })
+
+  it('keeps the active child flat inside its group', () => {
+    renderSidebar('/users')
+    const child = screen.getByRole('link', { name: 'Users' })
+    // Tint only: a second shadow nested in the group reads as double elevation.
+    expect(child.style.boxShadow).toBe('')
+  })
+})
+
 describe('Sidebar navigation semantics', () => {
+  it('opens Profile from the user card at the bottom', async () => {
+    renderSidebar('/dashboard')
+
+    const card = screen.getByTestId('sidebar-user')
+    const link = within(card).getByRole('link', { name: /profile/i })
+    expect(link).toHaveAttribute('href', '/profile')
+  })
+
+  it('marks the user card as current while on Profile', () => {
+    renderSidebar('/profile')
+    const card = screen.getByTestId('sidebar-user')
+    expect(within(card).getByRole('link', { name: /profile/i })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+  })
+
+  it('does not offer Profile twice', () => {
+    renderSidebar('/dashboard')
+    const toProfile = screen
+      .getAllByRole('link')
+      .filter((a) => a.getAttribute('href') === '/profile')
+    expect(toProfile, 'Profile should only be reachable from the user card').toHaveLength(1)
+  })
+
   it('marks the active route for assistive tech', () => {
     renderSidebar('/dashboard')
     expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page')
