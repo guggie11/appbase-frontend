@@ -47,7 +47,7 @@ export function MenusPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editMenu, setEditMenu] = useState<Menu | null>(null)
   const [page, setPage] = useState(1)
-  const [draggedId, setDraggedId] = useState<string | null>(null)
+  const [dragOverId, setDragOverId] = useState<string | null>(null)
 
   const roles = rolesRes?.data ?? []
   const PAGE_SIZE = 20
@@ -75,11 +75,24 @@ export function MenusPage() {
 
   async function handleReorder(dragId: string, dropId: string) {
     if (dragId === dropId) return
-    const dragged = menus.find((m) => m.id === dragId)
-    const target = menus.find((m) => m.id === dropId)
-    if (!dragged || !target) return
-    await updateMenuOrder.mutateAsync({ id: dragId, order_index: target.order_index })
-    await updateMenuOrder.mutateAsync({ id: dropId, order_index: dragged.order_index })
+    const sorted = [...menus].sort((a, b) => a.order_index - b.order_index)
+    const dragIdx = sorted.findIndex((m) => m.id === dragId)
+    const dropIdx = sorted.findIndex((m) => m.id === dropId)
+    if (dragIdx === -1 || dropIdx === -1) return
+
+    // Reorder: splice drag ke posisi drop
+    const reordered = [...sorted]
+    const [draggedItem] = reordered.splice(dragIdx, 1)
+    reordered.splice(dropIdx, 0, draggedItem)
+
+    // Update semua item yang posisinya berubah
+    const changedItems = reordered
+      .map((m, i) => ({ id: m.id, newIdx: i + 1, oldIdx: sorted.findIndex((s) => s.id === m.id) + 1 }))
+      .filter((u) => u.newIdx !== u.oldIdx)
+
+    for (const u of changedItems) {
+      await updateMenuOrder.mutateAsync({ id: u.id, order_index: u.newIdx })
+    }
   }
 
   return (
@@ -138,29 +151,30 @@ export function MenusPage() {
                     ? menus.find((m) => m.id === menu.parent_id)?.label
                     : null
                   const menuRoles = menu.roles ?? []
-                  const isDraggingOver = draggedId !== null && draggedId !== menu.id
+                  const isDraggingOver = dragOverId === menu.id
 
                   return (
                     <tr
                       key={menu.id}
                       style={{
                         transition: 'background 100ms',
-                        background: isDraggingOver ? '#F0FDF4' : undefined,
-                        outline: isDraggingOver ? '2px dashed #10B981' : undefined,
+                        background: isDraggingOver ? 'var(--color-primary-light)' : undefined,
+                        outline: isDraggingOver ? '2px dashed var(--color-primary)' : undefined,
                         outlineOffset: -2,
                       }}
-                      onDragOver={(e) => { e.preventDefault() }}
+                      onDragOver={(e) => { e.preventDefault(); setDragOverId(menu.id) }}
+                      onDragLeave={() => setDragOverId(null)}
                       onDrop={(e) => {
                         e.preventDefault()
                         const fromId = e.dataTransfer.getData('text/plain')
                         if (fromId) handleReorder(fromId, menu.id)
-                        setDraggedId(null)
+                        setDragOverId(null)
                       }}
                       onMouseEnter={(e) => {
-                        if (!draggedId) (e.currentTarget as HTMLElement).style.background = '#F9FAFB'
+                        if (!dragOverId) (e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.02)'
                       }}
                       onMouseLeave={(e) => {
-                        if (!draggedId) (e.currentTarget as HTMLElement).style.background = ''
+                        if (!dragOverId) (e.currentTarget as HTMLElement).style.background = ''
                       }}
                     >
                       {/* Drag handle */}
@@ -169,9 +183,8 @@ export function MenusPage() {
                           draggable
                           onDragStart={(e) => {
                             e.dataTransfer.setData('text/plain', menu.id)
-                            setDraggedId(menu.id)
                           }}
-                          onDragEnd={() => setDraggedId(null)}
+                          onDragEnd={() => setDragOverId(null)}
                           style={{ cursor: 'grab', color: '#D1D5DB', padding: '0 4px', display: 'flex', alignItems: 'center' }}
                           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#6B7280' }}
                           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#D1D5DB' }}
