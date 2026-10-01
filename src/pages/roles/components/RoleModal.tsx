@@ -89,7 +89,7 @@ export function RoleModal({ open, onClose, role }: RoleModalProps) {
             </label>
             <input
               {...register('name')}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#d8452a]"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
             />
             {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>}
           </div>
@@ -101,7 +101,7 @@ export function RoleModal({ open, onClose, role }: RoleModalProps) {
             <textarea
               {...register('description')}
               rows={3}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#d8452a] resize-none"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] resize-none"
             />
           </div>
 
@@ -111,7 +111,7 @@ export function RoleModal({ open, onClose, role }: RoleModalProps) {
                 type="checkbox"
                 id="is_active"
                 {...register('is_active')}
-                className="h-4 w-4 rounded border-gray-300 text-[#d8452a] focus:ring-[#d8452a]"
+                className="h-4 w-4 rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
               />
               <label htmlFor="is_active" className="text-sm text-gray-700">
                 Active
@@ -136,7 +136,7 @@ export function RoleModal({ open, onClose, role }: RoleModalProps) {
             <button
               type="submit"
               disabled={isPending}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-[#d8452a] text-white hover:bg-[#c0402a] disabled:opacity-60 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] disabled:opacity-60 transition-colors"
             >
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               {isEdit ? 'Save Changes' : 'Create Role'}

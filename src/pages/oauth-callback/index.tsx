@@ -78,7 +78,7 @@ export function OAuthCallbackPage() {
               alignItems: 'center',
               justifyContent: 'center',
               padding: '10px 24px',
-              background: '#d8452a',
+              background: 'var(--color-primary)',
               color: 'white',
               fontWeight: 600,
               fontSize: 14,
@@ -108,7 +108,7 @@ export function OAuthCallbackPage() {
         gap: 16,
       }}
     >
-      <Loader2 size={40} style={{ color: '#d8452a', animation: 'spin 1s linear infinite' }} />
+      <Loader2 size={40} style={{ color: 'var(--color-primary)', animation: 'spin 1s linear infinite' }} />
       <p style={{ fontSize: 15, color: '#6B7280', fontWeight: 500 }}>Completing sign in...</p>
     </div>
   )

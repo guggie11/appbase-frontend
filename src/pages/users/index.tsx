@@ -84,7 +84,7 @@ export function UsersPage() {
         cell: ({ row }) => {
           const user = row.original
           return (
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#FFF5F3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#d8452a', overflow: 'hidden' }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--color-primary)', overflow: 'hidden' }}>
               {user.avatar
                 ? <img src={user.avatar} style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: '50%' }} alt="" />
                 : (user.name?.[0]?.toUpperCase() ?? '?')}
@@ -133,7 +133,7 @@ export function UsersPage() {
         cell: ({ row }) => (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
             {row.original.roles?.map((r) => (
-              <span key={r.id} style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 9999, fontSize: 11, fontWeight: 500, background: '#FFF5F3', color: '#d8452a' }}>
+              <span key={r.id} style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 9999, fontSize: 11, fontWeight: 500, background: 'var(--color-primary-light)', color: '#d8452a' }}>
                 {r.name}
               </span>
             ))}

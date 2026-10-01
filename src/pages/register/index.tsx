@@ -191,7 +191,7 @@ export function RegisterPage() {
                 to="/login"
                 style={{
                   display: 'inline-block',
-                  color: '#d8452a',
+                  color: 'var(--color-primary)',
                   fontWeight: 500,
                   fontSize: 14,
                   textDecoration: 'none',
@@ -234,7 +234,7 @@ export function RegisterPage() {
                 Already have an account?{' '}
                 <Link
                   to="/login"
-                  style={{ color: '#d8452a', fontWeight: 500, textDecoration: 'none' }}
+                  style={{ color: 'var(--color-primary)', fontWeight: 500, textDecoration: 'none' }}
                 >
                   Sign in
                 </Link>
@@ -360,7 +360,7 @@ export function RegisterPage() {
                     gap: 8,
                     width: '100%',
                     padding: '10px 16px',
-                    background: '#d8452a',
+                    background: 'var(--color-primary)',
                     color: 'white',
                     fontWeight: 600,
                     fontSize: 14,
@@ -373,10 +373,10 @@ export function RegisterPage() {
                   }}
                   onMouseEnter={(e) => {
                     if (!register_mutation.isPending)
-                      (e.currentTarget as HTMLElement).style.background = '#c0402a'
+                      (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-hover)'
                   }}
                   onMouseLeave={(e) => {
-                    ;(e.currentTarget as HTMLElement).style.background = '#d8452a'
+                    ;(e.currentTarget as HTMLElement).style.background = 'var(--color-primary)'
                   }}
                 >
                   {register_mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}

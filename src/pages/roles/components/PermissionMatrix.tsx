@@ -52,7 +52,7 @@ export function PermissionMatrix({ roleId, roleName }: PermissionMatrixProps) {
   if (loadingAll || loadingRole) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-6 w-6 animate-spin text-[#d8452a]" />
+        <Loader2 className="h-6 w-6 animate-spin text-[var(--color-primary)]" />
       </div>
     )
   }
@@ -61,12 +61,12 @@ export function PermissionMatrix({ roleId, roleName }: PermissionMatrixProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-gray-700">
-          Permissions for <span className="text-[#d8452a]">{roleName}</span>
+          Permissions for <span className="text-[var(--color-primary)]">{roleName}</span>
         </h3>
         <button
           onClick={handleSave}
           disabled={updateMutation.isPending}
-          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg bg-[#d8452a] text-white hover:bg-[#c0402a] disabled:opacity-60 transition-colors"
+          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] disabled:opacity-60 transition-colors"
         >
           {updateMutation.isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -94,7 +94,7 @@ export function PermissionMatrix({ roleId, roleName }: PermissionMatrixProps) {
                   type="checkbox"
                   checked={selected.has(p.id)}
                   onChange={() => toggle(p.id)}
-                  className="h-4 w-4 rounded border-gray-300 text-[#d8452a] focus:ring-[#d8452a]"
+                  className="h-4 w-4 rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                 />
                 <div className="flex-1 min-w-0">
                   <span className="text-sm text-gray-700">{p.name}</span>

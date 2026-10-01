@@ -43,7 +43,7 @@ export function OAuthErrorPage() {
             alignItems: 'center',
             justifyContent: 'center',
             padding: '10px 24px',
-            background: '#d8452a',
+            background: 'var(--color-primary)',
             color: 'white',
             fontWeight: 600,
             fontSize: 14,

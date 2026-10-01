@@ -200,7 +200,7 @@ export function LoginPage() {
                 gap: 8,
                 width: '100%',
                 padding: '10px 16px',
-                background: '#d8452a',
+                background: 'var(--color-primary)',
                 color: 'white',
                 fontWeight: 600,
                 fontSize: 14,
@@ -211,7 +211,7 @@ export function LoginPage() {
                 transition: 'background 150ms',
                 marginTop: 4,
               }}
-              onMouseEnter={(e) => { if (!login.isPending) (e.currentTarget as HTMLElement).style.background = '#c0402a' }}
+              onMouseEnter={(e) => { if (!login.isPending) (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-hover)' }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#d8452a' }}
             >
               {login.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -336,7 +336,7 @@ export function LoginPage() {
           <div style={{ marginTop: 20, textAlign: 'center', fontSize: 13, color: '#6B7280' }}>
             <Link
               to="/forgot-password"
-              style={{ color: '#d8452a', textDecoration: 'none', fontWeight: 500 }}
+              style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 500 }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline' }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'none' }}
             >
@@ -348,7 +348,7 @@ export function LoginPage() {
             Don&apos;t have an account?{' '}
             <Link
               to="/register"
-              style={{ color: '#d8452a', fontWeight: 500, textDecoration: 'none' }}
+              style={{ color: 'var(--color-primary)', fontWeight: 500, textDecoration: 'none' }}
             >
               Sign up
             </Link>
