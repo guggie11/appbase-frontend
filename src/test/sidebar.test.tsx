@@ -11,6 +11,12 @@ const NAV: MenuTree[] = [
     id: 'dashboard', label: 'Dashboard', icon: 'layout-dashboard', path: '/dashboard',
     parent_id: null, order_index: 0, is_active: true, roles: [], children: [],
   },
+  // The real backend ships a Profile menu; the sidebar must not render it
+  // alongside the user card, which already links there.
+  {
+    id: 'profile', label: 'Profile', icon: 'user', path: '/profile',
+    parent_id: null, order_index: 1, is_active: true, roles: [], children: [],
+  },
   {
     id: 'admin', label: 'Administration', icon: 'shield', path: null,
     parent_id: null, order_index: 1, is_active: true, roles: [],
@@ -101,6 +107,31 @@ describe('Sidebar Archie v4 spec', () => {
 })
 
 describe('Sidebar navigation semantics', () => {
+  it('opens Profile from the user card at the bottom', async () => {
+    renderSidebar('/dashboard')
+
+    const card = screen.getByTestId('sidebar-user')
+    const link = within(card).getByRole('link', { name: /profile/i })
+    expect(link).toHaveAttribute('href', '/profile')
+  })
+
+  it('marks the user card as current while on Profile', () => {
+    renderSidebar('/profile')
+    const card = screen.getByTestId('sidebar-user')
+    expect(within(card).getByRole('link', { name: /profile/i })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+  })
+
+  it('does not offer Profile twice', () => {
+    renderSidebar('/dashboard')
+    const toProfile = screen
+      .getAllByRole('link')
+      .filter((a) => a.getAttribute('href') === '/profile')
+    expect(toProfile, 'Profile should only be reachable from the user card').toHaveLength(1)
+  })
+
   it('marks the active route for assistive tech', () => {
     renderSidebar('/dashboard')
     expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page')

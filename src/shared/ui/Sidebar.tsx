@@ -295,6 +295,7 @@ export function Sidebar() {
   })
 
   const { data: menuTree, isLoading } = useMyMenu()
+  const { pathname } = useLocation()
   const user = useAuthStore((s) => s.user)
   const userDetail = user as unknown as UserDetail | null
   const { appName, appSubtitle, logoUrl } = useThemeStore()
@@ -322,7 +323,11 @@ export function Sidebar() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  const nav = menuTree && menuTree.length > 0 ? menuTree : STATIC_NAV
+  // Profile is reachable from the user card at the bottom, so drop it from
+  // the main list rather than offering the same destination twice.
+  const nav = (menuTree && menuTree.length > 0 ? menuTree : STATIC_NAV).filter(
+    (item) => item.path !== '/profile',
+  )
   // Archie: 264px open, 84px collapsed.
   const width = collapsed ? 84 : 264
 
@@ -331,6 +336,8 @@ export function Sidebar() {
     : '?'
 
   const roleLabel = (userDetail as unknown as { roles?: Array<{ name: string }> })?.roles?.[0]?.name ?? 'User'
+  // Profile now lives on the user card, so the card carries the active state.
+  const isProfile = pathname === '/profile' || pathname.startsWith('/profile/')
 
   return (
     <aside
@@ -521,15 +528,35 @@ export function Sidebar() {
 
       {/* ── Bottom: user row ── */}
       <div style={{ marginTop: 'auto', flexShrink: 0 }} data-testid="sidebar-user">
-        <div
+        <Link
+          to="/profile"
+          aria-label={user ? `Profile — ${user.name}` : 'Profile'}
+          aria-current={isProfile ? 'page' : undefined}
+          title={collapsed && user ? `${user.name} — ${roleLabel}` : 'Open profile'}
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: 10,
-            padding: collapsed ? '6px 0' : '6px 14px',
+            padding: collapsed ? '6px 0' : '6px 10px',
+            margin: collapsed ? 0 : '0 4px',
             justifyContent: collapsed ? 'center' : 'flex-start',
+            textDecoration: 'none',
+            borderRadius: 14,
+            // A white card reads as "container" against the light sidebar, not
+            // as a selection — use the same accent tint the nav uses.
+            background: isProfile ? 'var(--color-primary-light)' : 'transparent',
+            // Non-colour cue as well: colour alone disappears for colour-blind
+            // users once the tint flattens toward the sidebar grey.
+            boxShadow: isProfile ? 'inset 3px 0 0 var(--color-primary)' : 'none',
+            transition: 'background 150ms',
+            cursor: 'pointer',
           }}
-          title={collapsed && user ? `${user.name} — ${roleLabel}` : undefined}
+          onMouseEnter={(e) => {
+            if (!isProfile) e.currentTarget.style.background = 'rgba(0,0,0,0.04)'
+          }}
+          onMouseLeave={(e) => {
+            if (!isProfile) e.currentTarget.style.background = 'transparent'
+          }}
         >
           {/* Avatar */}
           <div
@@ -560,7 +587,9 @@ export function Sidebar() {
                 style={{
                   fontSize: 13,
                   fontWeight: 500,
-                  color: '#1b1c1e',
+                  // Accent-on-tint at 13px needs the darker shade to clear
+                  // WCAG AA; the base primary only reaches ~3.3:1 here.
+                  color: isProfile ? 'var(--color-primary-hover)' : '#1b1c1e',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
@@ -582,7 +611,20 @@ export function Sidebar() {
               </div>
             </div>
           )}
-        </div>
+
+          {/* Affordance: without this the card reads as a static info block. */}
+          {!collapsed && (
+            <ChevronRight
+              size={15}
+              aria-hidden
+              style={{
+                marginLeft: 'auto',
+                flexShrink: 0,
+                color: isProfile ? 'var(--color-primary)' : '#a3a5a7',
+              }}
+            />
+          )}
+        </Link>
       </div>
     </aside>
   )
