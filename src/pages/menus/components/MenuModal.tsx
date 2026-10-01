@@ -3,6 +3,7 @@ import { useForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { X } from 'lucide-react'
+import * as LucideIcons from 'lucide-react'
 import type { Menu } from '@/shared/api/types'
 import type { Role } from '@/shared/api/types'
 import {
@@ -12,9 +13,25 @@ import {
 
 // ── Schema ─────────────────────────────────────────────────────────────────
 
-const schema = z.object({
+/** Mirrors Sidebar's getLucideIcon() so the form rejects what it would render blank. */
+export function iconExists(name: string): boolean {
+  const pascal = name
+    .split(/[-_\s]/)
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join('')
+  return Boolean((LucideIcons as unknown as Record<string, unknown>)[pascal])
+}
+
+export const schema = z.object({
   label: z.string().min(1, 'Label is required'),
-  icon: z.string().optional(),
+  // An unknown name silently degrades to a blank circle in the sidebar,
+  // which is how "administration" shipped unnoticed.
+  icon: z
+    .string()
+    .optional()
+    .refine((v) => !v || iconExists(v), {
+      message: 'Unknown icon — use a Lucide name such as ShieldCheck or Users',
+    }),
   path: z.string().optional(),
   parent_id: z.string().optional(),
   is_active: z.boolean(),
