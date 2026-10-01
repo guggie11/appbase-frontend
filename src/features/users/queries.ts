@@ -40,8 +40,26 @@ export function useCreateUser() {
 export function useUpdateUser() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, ...data }: { id: string; name?: string; email?: string }) => {
+    mutationFn: async ({
+      id,
+      role_ids,
+      ...data
+    }: {
+      id: string
+      name?: string
+      email?: string
+      role_ids?: string[]
+    }) => {
       const res = await apiClient.put<ApiSuccess<UserWithRoles>>(`/users/${id}`, data)
+      // Roles live behind a dedicated endpoint; PUT /users/{id} ignores them,
+      // so without this call role edits are silently discarded.
+      if (role_ids) {
+        const withRoles = await apiClient.post<ApiSuccess<UserWithRoles>>(
+          `/users/${id}/roles`,
+          { role_ids },
+        )
+        return withRoles.data.data
+      }
       return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),

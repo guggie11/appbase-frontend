@@ -29,10 +29,15 @@
   --radius-pill: 999px;
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* The universal reset MUST stay inside @layer base. Unlayered rules beat every
+   Tailwind utility, which silently collapses padding and margin classes to 0
+   app-wide. */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 }
 
 html, body {
