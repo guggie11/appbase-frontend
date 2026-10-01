@@ -9,9 +9,9 @@ import { buildDisplayRows, planReorder } from './ordering'
 // ── Table styles ────────────────────────────────────────────────────────────
 
 const tableContainerStyle: React.CSSProperties = {
-  background: 'white',
-  border: '1px solid #E5E7EB',
-  borderRadius: 8,
+  background: 'var(--color-card)',
+  border: '1px solid var(--color-border-light)',
+  borderRadius: 14,
   overflow: 'hidden',
   boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
 }
@@ -19,21 +19,22 @@ const tableContainerStyle: React.CSSProperties = {
 const thStyle: React.CSSProperties = {
   padding: '10px 16px',
   textAlign: 'left',
+  fontFamily: "'Geist Mono', monospace",
   fontSize: 11,
-  fontWeight: 600,
-  color: '#6B7280',
+  fontWeight: 500,
+  color: 'var(--color-text-meta)',
   textTransform: 'uppercase',
-  letterSpacing: '0.06em',
-  background: '#F9FAFB',
-  borderBottom: '1px solid #E5E7EB',
+  letterSpacing: '0.08em',
+  background: 'var(--color-card-alt)',
+  borderBottom: '1px solid var(--color-border)',
   whiteSpace: 'nowrap',
 }
 
 const tdStyle: React.CSSProperties = {
   padding: '12px 16px',
-  fontSize: 14,
-  color: '#374151',
-  borderBottom: '1px solid #F3F4F6',
+  fontSize: 13,
+  color: 'var(--color-text-secondary)',
+  borderBottom: '1px solid var(--color-border-light)',
 }
 
 // ── Page ────────────────────────────────────────────────────────────────────
@@ -106,13 +107,22 @@ export function MenusPage() {
     await handleReorder(menu.id, target.id)
   }
 
+  /** True when the menu already sits at the edge of its sibling group. */
+  function isAtEdge(menu: Menu, direction: -1 | 1): boolean {
+    const siblings = menus
+      .filter((m) => (m.parent_id ?? null) === (menu.parent_id ?? null))
+      .sort((a, b) => a.order_index - b.order_index || a.id.localeCompare(b.id))
+    const index = siblings.findIndex((m) => m.id === menu.id)
+    return siblings[index + direction] === undefined
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1A1A1A', marginBottom: 2 }}>Menu Management</h1>
-          <p style={{ fontSize: 13, color: '#6B7280' }}>Manage navigation menus and their role assignments</p>
+          <h1 style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--color-text-primary)', marginBottom: 2 }}>Menu Management</h1>
+          <p style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>Manage navigation menus and their role assignments</p>
         </div>
         <button
           onClick={openCreate}
@@ -267,18 +277,36 @@ export function MenusPage() {
                           <button
                             type="button"
                             aria-label={`Move ${menu.label} up`}
-                            disabled={isSaving}
+                            disabled={isSaving || isAtEdge(menu, -1)}
                             onClick={() => moveBy(menu, -1)}
-                            style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', padding: 1 }}
+                            style={{
+                              border: 'none',
+                              background: 'transparent',
+                              cursor: isSaving || isAtEdge(menu, -1) ? 'not-allowed' : 'pointer',
+                              opacity: isAtEdge(menu, -1) ? 0.3 : 1,
+                              color: 'var(--color-text-placeholder)',
+                              display: 'flex',
+                              padding: 3,
+                              borderRadius: 6,
+                            }}
                           >
                             <ChevronUp size={13} />
                           </button>
                           <button
                             type="button"
                             aria-label={`Move ${menu.label} down`}
-                            disabled={isSaving}
+                            disabled={isSaving || isAtEdge(menu, 1)}
                             onClick={() => moveBy(menu, 1)}
-                            style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', padding: 1 }}
+                            style={{
+                              border: 'none',
+                              background: 'transparent',
+                              cursor: isSaving || isAtEdge(menu, 1) ? 'not-allowed' : 'pointer',
+                              opacity: isAtEdge(menu, 1) ? 0.3 : 1,
+                              color: 'var(--color-text-placeholder)',
+                              display: 'flex',
+                              padding: 3,
+                              borderRadius: 6,
+                            }}
                           >
                             <ChevronDown size={13} />
                           </button>

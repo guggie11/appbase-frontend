@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import {
   ChevronRight,
   Circle,
+  PanelLeft,
   LayoutDashboard,
   Users,
   Shield,
@@ -79,6 +80,12 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
     if (isChildActive) setOpen(true)
   }, [isChildActive])
 
+  // Collapsing the rail hides labels; close any open group so the flyout
+  // starts from a predictable state when the user expands again.
+  useEffect(() => {
+    if (collapsed && !isChildActive) setOpen(false)
+  }, [collapsed, isChildActive])
+
   const baseStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
@@ -89,7 +96,7 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
     fontSize: 14,
     fontWeight: 400,
     cursor: 'pointer',
-    transition: 'background 150ms',
+    transition: 'background 150ms, color 150ms',
     border: 'none',
     background: 'transparent',
     width: '100%',
@@ -97,6 +104,7 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
     color: '#4a4c4e',
     fontFamily: "'Geist', Helvetica, Arial, sans-serif",
     justifyContent: collapsed ? 'center' : 'flex-start',
+    position: 'relative',
   }
 
   const activeStyle: React.CSSProperties = {
@@ -114,9 +122,12 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
 
   if (hasChildren) {
     return (
-      <div>
+      <div style={{ position: 'relative' }}>
         <button
+          type="button"
           onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-label={collapsed ? item.label : undefined}
           title={collapsed ? item.label : undefined}
           style={isChildActive ? { ...inactiveStyle, background: '#ffffff', color: '#1b1c1e', fontWeight: 600, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' } : inactiveStyle}
           onMouseEnter={(e) => {
@@ -156,6 +167,44 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
             ))}
           </div>
         )}
+
+        {/* Collapsed rail: children would be unreachable, so surface them
+            in a flyout anchored to the group button. */}
+        {open && collapsed && (
+          <div
+            style={{
+              position: 'absolute',
+              left: 'calc(100% + 8px)',
+              top: 0,
+              zIndex: 40,
+              minWidth: 190,
+              background: '#ffffff',
+              border: '1px solid var(--color-border-light)',
+              borderRadius: 14,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+              padding: 6,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "'Geist Mono', monospace",
+                fontSize: 10,
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                color: '#8a8c8e',
+                padding: '6px 10px 2px',
+              }}
+            >
+              {item.label}
+            </div>
+            {item.children.map((child) => (
+              <NavItem key={child.id} item={child} collapsed={false} />
+            ))}
+          </div>
+        )}
       </div>
     )
   }
@@ -165,6 +214,8 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
   return (
     <Link
       to={item.path}
+      aria-current={isActive ? 'page' : undefined}
+      aria-label={collapsed ? item.label : undefined}
       title={collapsed ? item.label : undefined}
       style={isActive ? activeStyle : inactiveStyle}
       onMouseEnter={(e) => {
@@ -224,6 +275,19 @@ export function Sidebar() {
       return next
     })
   }
+
+  // Ctrl/Cmd+B toggles the rail — the convention users already know from
+  // VS Code and similar tools.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault()
+        toggleCollapse()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const nav = menuTree && menuTree.length > 0 ? menuTree : STATIC_NAV
   const width = collapsed ? 68 : 240
@@ -314,90 +378,67 @@ export function Sidebar() {
         </div>
       </div>
 
-        {/* Collapse toggle — di bawah logo, sebelum New Feature */}
-        {!collapsed && (
-          <button
-            onClick={toggleCollapse}
-            title="Collapse menu"
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 8,
-              border: '1px solid #dcdddd',
-              background: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: '#6c6e70',
-              fontSize: 12,
-              flexShrink: 0,
-              fontFamily: 'monospace',
-              alignSelf: 'flex-start',
-            }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#eeeeee' }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#fff' }}
-          >
-            ‹
-          </button>
-        )}
-
-        {/* Expand button when collapsed */}
-        {collapsed && (
-          <button
-            onClick={toggleCollapse}
-            title="Expand menu"
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 8,
-              border: '1px solid #dcdddd',
-              background: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: '#6c6e70',
-              fontSize: 12,
-              flexShrink: 0,
-              fontFamily: 'monospace',
-            }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#eeeeee' }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#fff' }}
-          >
-            ›
-          </button>
-        )}
-
-      {/* ── New Item CTA ── */}
+      {/* One toggle for both states — a single, stable focus target. */}
       <button
+        type="button"
+        onClick={toggleCollapse}
+        aria-expanded={!collapsed}
+        aria-controls="sidebar-nav"
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        title={collapsed ? 'Expand sidebar (Ctrl+B)' : 'Collapse sidebar (Ctrl+B)'}
         style={{
-          fontFamily: "'Geist', Helvetica, Arial, sans-serif",
-          fontSize: 14,
-          fontWeight: 600,
-          color: '#fff',
-          background: 'var(--color-primary)',
-          border: 'none',
-          borderRadius: 12,
-          padding: collapsed ? '13px 0' : '13px 16px',
-          cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
+          gap: 8,
+          alignSelf: collapsed ? 'center' : 'flex-start',
+          height: 32,
+          padding: collapsed ? 0 : '0 10px 0 8px',
+          width: collapsed ? 32 : 'auto',
           justifyContent: 'center',
-          gap: 10,
-          minHeight: 44,
-          width: '100%',
+          borderRadius: 10,
+          border: '1px solid var(--color-border)',
+          background: '#fff',
+          cursor: 'pointer',
+          color: 'var(--color-text-muted)',
           flexShrink: 0,
+          transition: 'background 150ms, color 150ms',
         }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-hover)' }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--color-primary)' }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'var(--color-card-alt)'
+          e.currentTarget.style.color = 'var(--color-text-primary)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = '#fff'
+          e.currentTarget.style.color = 'var(--color-text-muted)'
+        }}
       >
-        {!collapsed && <span style={{ whiteSpace: 'nowrap' }}>New Feature</span>}
-        <span style={{ fontSize: 16 }}>＋</span>
+        <PanelLeft
+          size={15}
+          style={{
+            flexShrink: 0,
+            transform: collapsed ? 'rotate(180deg)' : 'none',
+            transition: 'transform 220ms ease',
+          }}
+        />
+        {!collapsed && (
+          <span
+            style={{
+              fontFamily: "'Geist Mono', monospace",
+              fontSize: 10,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Collapse
+          </span>
+        )}
       </button>
 
       {/* ── Navigation ── */}
       <nav
+        id="sidebar-nav"
+        aria-label="Main"
         style={{
           display: 'flex',
           flexDirection: 'column',
@@ -432,7 +473,7 @@ export function Sidebar() {
       </nav>
 
       {/* ── Bottom: user row ── */}
-      <div style={{ marginTop: 'auto', flexShrink: 0 }}>
+      <div style={{ marginTop: 'auto', flexShrink: 0 }} data-testid="sidebar-user">
         <div
           style={{
             display: 'flex',
@@ -441,6 +482,7 @@ export function Sidebar() {
             padding: '6px 8px',
             justifyContent: collapsed ? 'center' : 'flex-start',
           }}
+          title={collapsed && user ? `${user.name} — ${roleLabel}` : undefined}
         >
           {/* Avatar */}
           <div
