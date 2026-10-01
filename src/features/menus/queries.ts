@@ -93,3 +93,25 @@ export function useUpdateMenuOrder() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['menus'] }),
   })
 }
+
+/** Atomically reorder one complete sibling group in a single request. */
+export function useReorderMenus() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      parent_id,
+      menu_ids,
+    }: {
+      parent_id: string | null
+      menu_ids: string[]
+    }) => {
+      const res = await apiClient.put<ApiSuccess<Menu[]>>('/menus/reorder', {
+        parent_id,
+        menu_ids,
+      })
+      return res.data.data
+    },
+    // Refresh the management table AND the sidebar, which reads my-menu.
+    onSettled: () => qc.invalidateQueries({ queryKey: ['menus'] }),
+  })
+}

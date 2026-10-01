@@ -1,9 +1,10 @@
-import { useState, useRef } from 'react'
-import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, GripVertical } from 'lucide-react'
+import { useState, useRef, useMemo } from 'react'
+import { Plus, Pencil, Trash2, GripVertical, ChevronUp, ChevronDown } from 'lucide-react'
 import type { Menu } from '@/shared/api/types'
-import { useMenus, useDeleteMenu, useUpdateMenu, useUpdateMenuOrder } from '@/features/menus/queries'
+import { useMenus, useDeleteMenu, useUpdateMenu, useReorderMenus } from '@/features/menus/queries'
 import { useRoles } from '@/features/roles/queries'
 import { MenuModal } from './components/MenuModal'
+import { buildDisplayRows, planReorder } from './ordering'
 
 // ── Table styles ────────────────────────────────────────────────────────────
 
@@ -42,18 +43,18 @@ export function MenusPage() {
   const { data: rolesRes } = useRoles(1, 100)
   const deleteMenu = useDeleteMenu()
   const updateMenu = useUpdateMenu()
-  const updateMenuOrder = useUpdateMenuOrder()
+  const reorderMenus = useReorderMenus()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editMenu, setEditMenu] = useState<Menu | null>(null)
-  const [page, setPage] = useState(1)
   const dragIdRef = useRef<string | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
+  const [notice, setNotice] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
 
   const roles = rolesRes?.data ?? []
-  const PAGE_SIZE = 20
-  const totalPages = Math.max(1, Math.ceil(menus.length / PAGE_SIZE))
-  const pagedMenus = menus.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  // Reordering needs the whole sibling group, so the table is never paginated.
+  const rows = useMemo(() => buildDisplayRows(menus), [menus])
+  const isSaving = reorderMenus.isPending
 
   function openCreate() {
     setEditMenu(null)
@@ -75,25 +76,34 @@ export function MenusPage() {
   }
 
   async function handleReorder(dragId: string, dropId: string) {
-    if (dragId === dropId) return
-    const sorted = [...menus].sort((a, b) => a.order_index - b.order_index)
-    const dragIdx = sorted.findIndex((m) => m.id === dragId)
-    const dropIdx = sorted.findIndex((m) => m.id === dropId)
-    if (dragIdx === -1 || dropIdx === -1) return
-
-    // Reorder: splice drag ke posisi drop
-    const reordered = [...sorted]
-    const [draggedItem] = reordered.splice(dragIdx, 1)
-    reordered.splice(dropIdx, 0, draggedItem)
-
-    // Update semua item yang posisinya berubah
-    const changedItems = reordered
-      .map((m, i) => ({ id: m.id, newIdx: i + 1, oldIdx: sorted.findIndex((s) => s.id === m.id) + 1 }))
-      .filter((u) => u.newIdx !== u.oldIdx)
-
-    for (const u of changedItems) {
-      await updateMenuOrder.mutateAsync({ id: u.id, order_index: u.newIdx })
+    const plan = planReorder(menus, dragId, dropId)
+    if (!plan.ok) {
+      if (plan.reason === 'cross-parent') {
+        setNotice({
+          kind: 'error',
+          text: 'Drag hanya bisa mengurutkan menu dalam satu induk yang sama. Untuk memindahkan induk, gunakan Edit → Parent Menu.',
+        })
+      }
+      return
     }
+    setNotice(null)
+    try {
+      await reorderMenus.mutateAsync({ parent_id: plan.parentId, menu_ids: plan.menuIds })
+      setNotice({ kind: 'success', text: 'Urutan menu tersimpan.' })
+    } catch {
+      setNotice({ kind: 'error', text: 'Gagal menyimpan urutan menu. Silakan coba lagi.' })
+    }
+  }
+
+  /** Keyboard/touch-accessible alternative to dragging. */
+  async function moveBy(menu: Menu, direction: -1 | 1) {
+    const siblings = menus
+      .filter((m) => (m.parent_id ?? null) === (menu.parent_id ?? null))
+      .sort((a, b) => a.order_index - b.order_index || a.id.localeCompare(b.id))
+    const index = siblings.findIndex((m) => m.id === menu.id)
+    const target = siblings[index + direction]
+    if (!target) return
+    await handleReorder(menu.id, target.id)
   }
 
   return (
@@ -112,6 +122,25 @@ export function MenusPage() {
           Create Menu
         </button>
       </div>
+
+      {/* Save status */}
+      {(notice || isSaving) && (
+        <div
+          role="status"
+          data-testid="menu-reorder-status"
+          style={{
+            padding: '10px 14px',
+            borderRadius: 10,
+            fontSize: 13,
+            border: '1px solid',
+            borderColor: notice?.kind === 'error' ? '#f5cec5' : 'var(--color-border-light)',
+            background: notice?.kind === 'error' ? 'var(--color-primary-light)' : 'var(--color-card-alt)',
+            color: notice?.kind === 'error' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+          }}
+        >
+          {isSaving ? 'Menyimpan urutan…' : notice?.text}
+        </div>
+      )}
 
       {/* Table */}
       <div style={tableContainerStyle}>
@@ -140,14 +169,14 @@ export function MenusPage() {
                     ))}
                   </tr>
                 ))
-              ) : pagedMenus.length === 0 ? (
+              ) : rows.length === 0 ? (
                 <tr>
                   <td colSpan={8} style={{ ...tdStyle, padding: '48px 16px', textAlign: 'center', color: '#9CA3AF' }}>
                     No menus found
                   </td>
                 </tr>
               ) : (
-                pagedMenus.map((menu) => {
+                rows.map(({ menu, depth }) => {
                   const parentLabel = menu.parent_id
                     ? menus.find((m) => m.id === menu.parent_id)?.label
                     : null
@@ -157,6 +186,7 @@ export function MenusPage() {
                   return (
                     <tr
                       key={menu.id}
+                      data-menu-id={menu.id}
                       style={{
                         transition: 'background 100ms',
                         background: isDraggingOver ? 'var(--color-primary-light)' : undefined,
@@ -183,27 +213,82 @@ export function MenusPage() {
                       }}
                     >
                       {/* Drag handle */}
-                      <td style={{ ...tdStyle, padding: '12px 8px', width: 36 }}>
-                        <div
-                          draggable
-                          onDragStart={(e) => {
-                            dragIdRef.current = menu.id
-                            e.dataTransfer.effectAllowed = 'move'
-                            e.dataTransfer.setData('text/plain', menu.id)
-                          }}
-                          onDragEnd={() => { dragIdRef.current = null; setDragOverId(null) }}
-                          style={{ cursor: 'grab', color: '#D1D5DB', padding: '0 4px', display: 'flex', alignItems: 'center' }}
-                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#6B7280' }}
-                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#D1D5DB' }}
-                        >
-                          <GripVertical size={16} />
+                      <td style={{ ...tdStyle, padding: '12px 8px', width: 76 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <button
+                            type="button"
+                            draggable
+                            aria-label={`Reorder ${menu.label}`}
+                            data-testid="menu-drag-handle"
+                            disabled={isSaving}
+                            onDragStart={(e) => {
+                              dragIdRef.current = menu.id
+                              e.dataTransfer.effectAllowed = 'move'
+                              e.dataTransfer.setData('text/plain', menu.id)
+                            }}
+                            onDragEnd={() => { dragIdRef.current = null; setDragOverId(null) }}
+                            onPointerDown={(e) => {
+                              // Pointer-driven drag so touch devices work too.
+                              if (e.pointerType === 'mouse' && e.button !== 0) return
+                              dragIdRef.current = menu.id
+                            }}
+                            onPointerMove={(e) => {
+                              if (dragIdRef.current !== menu.id) return
+                              const over = document
+                                .elementFromPoint(e.clientX, e.clientY)
+                                ?.closest('tr[data-menu-id]') as HTMLElement | null
+                              setDragOverId(over?.dataset.menuId ?? null)
+                            }}
+                            onPointerUp={(e) => {
+                              const fromId = dragIdRef.current
+                              dragIdRef.current = null
+                              const over = document
+                                .elementFromPoint(e.clientX, e.clientY)
+                                ?.closest('tr[data-menu-id]') as HTMLElement | null
+                              const dropId = over?.dataset.menuId
+                              setDragOverId(null)
+                              if (fromId && dropId && fromId !== dropId) handleReorder(fromId, dropId)
+                            }}
+                            style={{
+                              cursor: isSaving ? 'progress' : 'grab',
+                              color: '#D1D5DB',
+                              padding: '0 2px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              background: 'transparent',
+                              border: 'none',
+                              touchAction: 'none',
+                            }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#6B7280' }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#D1D5DB' }}
+                          >
+                            <GripVertical size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            aria-label={`Move ${menu.label} up`}
+                            disabled={isSaving}
+                            onClick={() => moveBy(menu, -1)}
+                            style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', padding: 1 }}
+                          >
+                            <ChevronUp size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            aria-label={`Move ${menu.label} down`}
+                            disabled={isSaving}
+                            onClick={() => moveBy(menu, 1)}
+                            style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', padding: 1 }}
+                          >
+                            <ChevronDown size={13} />
+                          </button>
                         </div>
                       </td>
 
                       {/* Label */}
                       <td style={tdStyle}>
-                        <span style={{ fontWeight: 500, color: '#1A1A1A' }}>
-                          {parentLabel ? '↳ ' : ''}{menu.label}
+                        <span style={{ fontWeight: 500, color: '#1A1A1A', paddingLeft: depth * 20 }}>
+                          {depth > 0 ? '↳ ' : ''}{menu.label}
                         </span>
                       </td>
 
@@ -321,30 +406,9 @@ export function MenusPage() {
         </div>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
-          <p style={{ fontSize: 12, color: '#9CA3AF' }}>
-            Page {page} of {totalPages} — {menus.length} total
-          </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              style={{ padding: 6, borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1, display: 'flex' }}
-            >
-              <ChevronLeft size={14} />
-            </button>
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page >= totalPages}
-              style={{ padding: 6, borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', cursor: page >= totalPages ? 'not-allowed' : 'pointer', opacity: page >= totalPages ? 0.4 : 1, display: 'flex' }}
-            >
-              <ChevronRight size={14} />
-            </button>
-          </div>
-        </div>
-      )}
+      <p style={{ fontSize: 12, color: '#9CA3AF', padding: '0 4px' }}>
+        {menus.length} menu — seret pegangan atau gunakan tombol panah untuk mengurutkan.
+      </p>
 
       {/* Modal */}
       <MenuModal
