@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo } from 'react'
-import { Plus, Pencil, Trash2, GripVertical, ChevronUp, ChevronDown } from 'lucide-react'
+import { Plus, Pencil, Trash2, GripVertical, ChevronUp, ChevronDown, Check, AlertCircle, X } from 'lucide-react'
 import type { Menu } from '@/shared/api/types'
 import { useMenus, useDeleteMenu, useUpdateMenu, useReorderMenus } from '@/features/menus/queries'
 import { useRoles } from '@/features/roles/queries'
@@ -82,7 +82,7 @@ export function MenusPage() {
       if (plan.reason === 'cross-parent') {
         setNotice({
           kind: 'error',
-          text: 'Drag hanya bisa mengurutkan menu dalam satu induk yang sama. Untuk memindahkan induk, gunakan Edit → Parent Menu.',
+          text: 'Dragging only reorders menus within the same parent. To change the parent, use Edit → Parent Menu.',
         })
       }
       return
@@ -90,9 +90,9 @@ export function MenusPage() {
     setNotice(null)
     try {
       await reorderMenus.mutateAsync({ parent_id: plan.parentId, menu_ids: plan.menuIds })
-      setNotice({ kind: 'success', text: 'Urutan menu tersimpan.' })
+      setNotice({ kind: 'success', text: 'Menu order saved.' })
     } catch {
-      setNotice({ kind: 'error', text: 'Gagal menyimpan urutan menu. Silakan coba lagi.' })
+      setNotice({ kind: 'error', text: 'Could not save the menu order. Please try again.' })
     }
   }
 
@@ -139,16 +139,45 @@ export function MenusPage() {
           role="status"
           data-testid="menu-reorder-status"
           style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
             padding: '10px 14px',
             borderRadius: 10,
             fontSize: 13,
             border: '1px solid',
-            borderColor: notice?.kind === 'error' ? '#f5cec5' : 'var(--color-border-light)',
-            background: notice?.kind === 'error' ? 'var(--color-primary-light)' : 'var(--color-card-alt)',
-            color: notice?.kind === 'error' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+            borderColor: notice?.kind === 'error'
+              ? '#f5cec5'
+              : notice?.kind === 'success' ? '#cbe5d8' : 'var(--color-border-light)',
+            background: notice?.kind === 'error'
+              ? 'var(--color-primary-light)'
+              : notice?.kind === 'success' ? 'var(--color-success-bg)' : 'var(--color-card-alt)',
+            color: notice?.kind === 'error'
+              ? 'var(--color-primary)'
+              : notice?.kind === 'success' ? '#1f7d52' : 'var(--color-text-secondary)',
           }}
         >
-          {isSaving ? 'Menyimpan urutan…' : notice?.text}
+          {!isSaving && notice?.kind === 'success' && <Check size={14} style={{ flexShrink: 0 }} />}
+          {!isSaving && notice?.kind === 'error' && <AlertCircle size={14} style={{ flexShrink: 0 }} />}
+          <span style={{ flex: 1 }}>{isSaving ? 'Saving order…' : notice?.text}</span>
+          {!isSaving && notice && (
+            <button
+              type="button"
+              aria-label="Dismiss message"
+              onClick={() => setNotice(null)}
+              style={{
+                border: 'none',
+                background: 'transparent',
+                cursor: 'pointer',
+                color: 'inherit',
+                opacity: 0.7,
+                display: 'flex',
+                padding: 2,
+              }}
+            >
+              <X size={13} />
+            </button>
+          )}
         </div>
       )}
 
@@ -158,7 +187,9 @@ export function MenusPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '100%' }}>
             <thead>
               <tr>
-                <th style={{ ...thStyle, width: 36, padding: '10px 8px' }}></th>
+                <th style={{ ...thStyle, width: 76, padding: '10px 8px' }} scope="col">
+                  <span className="sr-only">Order</span>
+                </th>
                 <th style={thStyle}>Label</th>
                 <th style={thStyle}>Icon</th>
                 <th style={thStyle}>Path</th>
@@ -408,18 +439,20 @@ export function MenusPage() {
                           <button
                             onClick={() => openEdit(menu)}
                             title="Edit"
-                            style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', transition: 'color 150ms, background 150ms' }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; (e.currentTarget as HTMLElement).style.color = '#d8452a' }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
+                            aria-label={`Edit ${menu.label}`}
+                            style={{ padding: 6, borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex', transition: 'color 150ms, background 150ms' }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--color-card-alt)'; (e.currentTarget as HTMLElement).style.color = 'var(--color-text-primary)' }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--color-text-muted)' }}
                           >
                             <Pencil size={14} />
                           </button>
                           <button
                             onClick={() => handleDelete(menu.id, menu.label)}
                             title="Delete"
-                            style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', transition: 'color 150ms, background 150ms' }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FEF2F2'; (e.currentTarget as HTMLElement).style.color = '#EF4444' }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
+                            aria-label={`Delete ${menu.label}`}
+                            style={{ padding: 6, borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex', transition: 'color 150ms, background 150ms' }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-light)'; (e.currentTarget as HTMLElement).style.color = 'var(--color-primary)' }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--color-text-muted)' }}
                           >
                             <Trash2 size={14} />
                           </button>
@@ -435,7 +468,7 @@ export function MenusPage() {
       </div>
 
       <p style={{ fontSize: 12, color: '#9CA3AF', padding: '0 4px' }}>
-        {menus.length} menu — seret pegangan atau gunakan tombol panah untuk mengurutkan.
+        {menus.length} menus — drag the handle or use the arrow buttons to reorder.
       </p>
 
       {/* Modal */}

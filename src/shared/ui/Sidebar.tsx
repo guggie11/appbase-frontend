@@ -91,7 +91,7 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
     alignItems: 'center',
     gap: 12,
     padding: '12px 10px',
-    paddingLeft: depth > 0 ? 20 : 10,
+    paddingLeft: depth > 0 ? 16 : 10,
     borderRadius: 14,
     fontSize: 14,
     fontWeight: 400,
@@ -105,6 +105,7 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
     fontFamily: "'Geist', Helvetica, Arial, sans-serif",
     justifyContent: collapsed ? 'center' : 'flex-start',
     position: 'relative',
+    boxSizing: 'border-box',
   }
 
   const activeStyle: React.CSSProperties = {
@@ -113,6 +114,16 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
     color: '#1b1c1e',
     fontWeight: 600,
     boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+  }
+
+  // A nested item must not outrank its own parent: children use a lighter
+  // tint + accent bar instead of the parent's raised white card.
+  const activeChildStyle: React.CSSProperties = {
+    ...baseStyle,
+    background: 'var(--color-primary-light)',
+    color: 'var(--color-primary)',
+    fontWeight: 600,
+    boxShadow: 'inset 2px 0 0 var(--color-primary)',
   }
 
   const inactiveStyle: React.CSSProperties = {
@@ -148,8 +159,8 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
 
         {open && !collapsed && (
           <div style={{
-            marginLeft: 10,
-            paddingLeft: 12,
+            marginLeft: 9,
+            paddingLeft: 9,
             borderLeft: '1.5px solid #e2e3e3',
             marginTop: 2,
             marginBottom: 2,
@@ -216,8 +227,9 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
       to={item.path}
       aria-current={isActive ? 'page' : undefined}
       aria-label={collapsed ? item.label : undefined}
-      title={collapsed ? item.label : undefined}
-      style={isActive ? activeStyle : inactiveStyle}
+      // Always expose the full label: narrow rails truncate it visually.
+      title={item.label}
+      style={isActive ? (depth > 0 ? activeChildStyle : activeStyle) : inactiveStyle}
       onMouseEnter={(e) => {
         if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.04)'
       }}
@@ -225,7 +237,13 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
         if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'
       }}
     >
-      <Icon size={19} style={{ flexShrink: 0, color: isActive ? '#1b1c1e' : '#4a4c4e' }} />
+      <Icon
+        size={19}
+        style={{
+          flexShrink: 0,
+          color: isActive ? (depth > 0 ? 'var(--color-primary)' : '#1b1c1e') : '#4a4c4e',
+        }}
+      />
       {!collapsed && (
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {item.label}
