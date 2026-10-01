@@ -101,7 +101,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 }}
                 onFocus={(e) => {
                   const parent = (e.target as HTMLInputElement).closest('div') as HTMLElement
-                  if (parent) parent.style.borderColor = '#d8452a'
+                  if (parent) parent.style.borderColor = 'var(--color-primary)'
                 }}
                 onBlur={(e) => {
                   const parent = (e.target as HTMLInputElement).closest('div') as HTMLElement

@@ -176,7 +176,7 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
             <input
               {...register('label')}
               placeholder="Menu label"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#d8452a]"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
             />
             {errors.label && (
               <p className="mt-1 text-xs text-red-600">{errors.label.message}</p>
@@ -191,7 +191,7 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
             <input
               {...register('icon')}
               placeholder="e.g. layout-dashboard"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#d8452a]"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
             />
           </div>
 
@@ -203,7 +203,7 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
             <input
               {...register('path')}
               placeholder="e.g. /dashboard"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#d8452a]"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
             />
           </div>
 
@@ -214,7 +214,7 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
             </label>
             <select
               {...register('parent_id')}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#d8452a]"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
             >
               <option value="">— Top level —</option>
               {parentOptions.map((m) => (
@@ -231,7 +231,7 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
               id="is_active"
               type="checkbox"
               {...register('is_active')}
-              className="h-4 w-4 rounded border-gray-300 text-[#d8452a]"
+              className="h-4 w-4 rounded border-gray-300 text-[var(--color-primary)]"
             />
             <label htmlFor="is_active" className="text-sm font-medium text-[#374151]">
               Active
@@ -254,7 +254,7 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
                     className={[
                       'rounded-full px-3 py-1 text-xs font-medium border transition-colors',
                       selected
-                        ? 'bg-[#d8452a] text-white border-[#d8452a]'
+                        ? 'bg-[var(--color-primary)] text-white border-[#d8452a]'
                         : 'bg-white text-[#4B5563] border-gray-300 hover:border-[#d8452a]',
                     ].join(' ')}
                   >
@@ -277,7 +277,7 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-md bg-[#d8452a] px-4 py-2 text-sm font-medium text-white hover:bg-[#c0402a] transition-colors disabled:opacity-50"
+              className="rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)] transition-colors disabled:opacity-50"
             >
               {isSubmitting ? 'Saving…' : editMenu ? 'Update' : 'Create'}
             </button>

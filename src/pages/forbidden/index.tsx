@@ -12,7 +12,7 @@ export function ForbiddenPage() {
 
         <div>
           <div style={{ fontSize: 64, fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>403</div>
-          <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#d8452a', marginTop: 8 }}>
+          <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-primary)', marginTop: 8 }}>
             Access Forbidden
           </div>
         </div>
@@ -30,12 +30,12 @@ export function ForbiddenPage() {
             fontSize: 14,
             fontWeight: 600,
             borderRadius: 6,
-            background: '#d8452a',
+            background: 'var(--color-primary)',
             color: 'white',
             textDecoration: 'none',
             transition: 'background 150ms',
           }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#c0402a' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-hover)' }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#d8452a' }}
         >
           Back to Dashboard

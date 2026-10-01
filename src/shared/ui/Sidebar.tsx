@@ -295,7 +295,7 @@ export function Sidebar() {
                   width: 12,
                   height: 12,
                   borderRadius: '50%',
-                  background: '#d8452a',
+                  background: 'var(--color-primary)',
                 }}
               />
             </div>
@@ -379,7 +379,7 @@ export function Sidebar() {
           fontSize: 14,
           fontWeight: 600,
           color: '#fff',
-          background: '#d8452a',
+          background: 'var(--color-primary)',
           border: 'none',
           borderRadius: 12,
           padding: collapsed ? '13px 0' : '13px 16px',
@@ -392,8 +392,8 @@ export function Sidebar() {
           width: '100%',
           flexShrink: 0,
         }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#bd3820' }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#d8452a' }}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-hover)' }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--color-primary)' }}
       >
         {!collapsed && <span style={{ whiteSpace: 'nowrap' }}>New Feature</span>}
         <span style={{ fontSize: 16 }}>＋</span>

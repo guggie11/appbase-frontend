@@ -258,8 +258,8 @@ export function MenusPage() {
                                   borderRadius: 9999,
                                   fontSize: 11,
                                   fontWeight: 500,
-                                  background: '#FFF5F3',
-                                  color: '#d8452a',
+                                  background: 'var(--color-primary-light)',
+                                  color: 'var(--color-primary)',
                                 }}
                               >
                                 {r.name}
