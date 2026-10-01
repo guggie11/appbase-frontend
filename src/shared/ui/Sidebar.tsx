@@ -253,14 +253,13 @@ export function Sidebar() {
         padding: collapsed ? '22px 10px' : '22px 16px',
       }}
     >
-      {/* ── Header: logo + collapse ── */}
+      {/* ── Header: logo only ── */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: 12,
           padding: '6px 8px',
-          justifyContent: 'space-between',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
@@ -313,8 +312,9 @@ export function Sidebar() {
             </div>
           )}
         </div>
+      </div>
 
-        {/* Collapse toggle */}
+        {/* Collapse toggle — di bawah logo, sebelum New Feature */}
         {!collapsed && (
           <button
             onClick={toggleCollapse}
@@ -333,6 +333,7 @@ export function Sidebar() {
               fontSize: 12,
               flexShrink: 0,
               fontFamily: 'monospace',
+              alignSelf: 'flex-start',
             }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#eeeeee' }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#fff' }}
@@ -360,9 +361,6 @@ export function Sidebar() {
               fontSize: 12,
               flexShrink: 0,
               fontFamily: 'monospace',
-              position: 'absolute',
-              right: 10,
-              top: 28,
             }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#eeeeee' }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#fff' }}
@@ -370,7 +368,6 @@ export function Sidebar() {
             ›
           </button>
         )}
-      </div>
 
       {/* ── New Item CTA ── */}
       <button
