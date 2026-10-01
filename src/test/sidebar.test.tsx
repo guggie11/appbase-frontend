@@ -75,6 +75,31 @@ describe('Sidebar collapse control', () => {
   })
 })
 
+describe('Sidebar Archie v4 spec', () => {
+  it('elevates only the active item, never its parent', async () => {
+    renderSidebar('/users')
+
+    const parent = screen.getByRole('button', { name: /administration/i })
+    // The parent of the active child must stay flat — a raised white card
+    // there outranks the item that is actually selected.
+    expect(parent.style.boxShadow).toBe('')
+    expect(parent.style.background).not.toBe('#ffffff')
+  })
+
+  it('uses Archie elevation on the active top-level card', () => {
+    renderSidebar('/dashboard')
+    const active = screen.getByRole('link', { name: 'Dashboard' })
+    expect(active.style.boxShadow).toBe('0 1px 2px rgba(27,28,30,0.06)')
+  })
+
+  it('keeps the active child flat inside its group', () => {
+    renderSidebar('/users')
+    const child = screen.getByRole('link', { name: 'Users' })
+    // Tint only: a second shadow nested in the group reads as double elevation.
+    expect(child.style.boxShadow).toBe('')
+  })
+})
+
 describe('Sidebar navigation semantics', () => {
   it('marks the active route for assistive tech', () => {
     renderSidebar('/dashboard')
