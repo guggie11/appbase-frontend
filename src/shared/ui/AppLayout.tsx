@@ -3,6 +3,7 @@ import { Search } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { NotificationBell } from './NotificationBell'
 import { useAuthStore } from '@/features/auth/store'
+import { useThemeStore } from '@/shared/config/theme'
 import type { UserDetail } from '@/shared/api/types'
 
 interface AppLayoutProps {
@@ -28,6 +29,7 @@ function getPageTitle(pathname: string): string {
 export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation()
   const user = useAuthStore((s) => s.user)
+  const { appName } = useThemeStore()
   const title = getPageTitle(location.pathname)
   const userDetail = user as unknown as UserDetail | null
 
@@ -36,7 +38,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     : '?'
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#F5F5F5' }}>
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#e9eaea' }}>
       {/* Sidebar */}
       <div style={{ flexShrink: 0 }}>
         <Sidebar />
@@ -47,67 +49,73 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Topbar */}
         <header
           style={{
-            height: 64,
-            background: '#FFFFFF',
-            borderBottom: '1px solid #E5E7EB',
+            background: '#e9eaea',
+            borderBottom: '1px solid #dcdddd',
             display: 'flex',
             alignItems: 'center',
-            padding: '0 24px',
-            gap: 16,
+            padding: '20px 28px',
+            gap: 20,
             flexShrink: 0,
+            position: 'sticky',
+            top: 0,
+            zIndex: 2,
           }}
         >
-          {/* Page title / breadcrumb */}
-          <div style={{ flex: '0 0 auto' }}>
-            <h1 style={{ fontSize: 18, fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{title}</h1>
+          {/* Breadcrumb / title */}
+          <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 13, color: '#8a8c8e', fontFamily: "'Geist', Helvetica, Arial, sans-serif" }}>
+              {appName}
+            </span>
+            <span style={{ fontSize: 13, color: '#8a8c8e' }}>/</span>
+            <span style={{ fontSize: 13, color: '#1b1c1e', fontWeight: 500, fontFamily: "'Geist', Helvetica, Arial, sans-serif" }}>
+              {title}
+            </span>
           </div>
 
-          {/* Search bar */}
+          {/* Search bar — centered */}
           <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
             <div
               style={{
-                position: 'relative',
-                width: 300,
+                width: '100%',
+                maxWidth: 520,
+                background: '#fff',
+                border: '1px solid #e2e3e3',
+                borderRadius: 14,
+                padding: '11px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
               }}
             >
-              <Search
-                size={14}
-                style={{
-                  position: 'absolute',
-                  left: 12,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: '#9CA3AF',
-                }}
-              />
+              <Search size={14} style={{ color: '#a3a5a7', flexShrink: 0 }} />
               <input
-                placeholder="Search…"
+                placeholder="Search..."
                 style={{
-                  width: '100%',
-                  background: '#F3F4F6',
-                  border: '1px solid transparent',
-                  borderRadius: 9999,
-                  padding: '8px 16px 8px 34px',
-                  fontSize: 13,
-                  color: '#1A1A1A',
+                  flex: 1,
+                  border: 'none',
                   outline: 'none',
-                  transition: 'border-color 150ms',
+                  fontSize: 11,
+                  fontFamily: "'Geist Mono', monospace",
+                  color: '#1b1c1e',
+                  background: 'transparent',
                 }}
-                onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = '#D94F3D' }}
-                onBlur={(e) => { (e.target as HTMLInputElement).style.borderColor = 'transparent' }}
+                onFocus={(e) => {
+                  const parent = (e.target as HTMLInputElement).closest('div') as HTMLElement
+                  if (parent) parent.style.borderColor = '#d8452a'
+                }}
+                onBlur={(e) => {
+                  const parent = (e.target as HTMLInputElement).closest('div') as HTMLElement
+                  if (parent) parent.style.borderColor = '#e2e3e3'
+                }}
               />
               <span
                 style={{
-                  position: 'absolute',
-                  right: 12,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  fontSize: 10,
-                  color: '#9CA3AF',
-                  fontWeight: 600,
-                  border: '1px solid #E5E7EB',
-                  borderRadius: 4,
-                  padding: '1px 5px',
+                  fontFamily: "'Geist Mono', monospace",
+                  fontSize: 11,
+                  color: '#a3a5a7',
+                  marginLeft: 'auto',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
                 }}
               >
                 ⌘K
@@ -116,27 +124,46 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
 
           {/* Right actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-            <NotificationBell />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto', flexShrink: 0 }}>
+            {/* Notification bell */}
             <div
               style={{
-                width: 36,
-                height: 36,
+                width: 38,
+                height: 38,
                 borderRadius: '50%',
-                background: '#D94F3D',
+                background: '#fff',
+                border: '1px solid #e2e3e3',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: 'white',
+                overflow: 'hidden',
+                flexShrink: 0,
+              }}
+            >
+              <NotificationBell />
+            </div>
+
+            {/* Avatar */}
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: '50%',
+                background: '#dcdddd',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#4a4c4e',
                 fontSize: 13,
-                fontWeight: 700,
+                fontWeight: 600,
                 cursor: 'pointer',
                 overflow: 'hidden',
+                flexShrink: 0,
               }}
               title={user?.name ?? 'Profile'}
             >
               {userDetail?.avatar
-                ? <img src={userDetail.avatar} style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: '50%' }} alt="" />
+                ? <img src={userDetail.avatar} style={{ width: 38, height: 38, objectFit: 'cover', borderRadius: '50%' }} alt="" />
                 : initials}
             </div>
           </div>
@@ -147,7 +174,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           style={{
             flex: 1,
             overflowY: 'auto',
-            padding: 24,
+            padding: '32px 28px',
           }}
         >
           <div style={{ maxWidth: 1400, margin: '0 auto' }}>

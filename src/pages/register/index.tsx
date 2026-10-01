@@ -85,7 +85,7 @@ export function RegisterPage() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: "'Geist', Helvetica, Arial, sans-serif" }}>
       {/* Left branding panel */}
       <div
         style={{
@@ -109,15 +109,13 @@ export function RegisterPage() {
                 width: 44,
                 height: 44,
                 borderRadius: '50%',
-                background: 'rgba(255,255,255,0.2)',
+                border: '2px solid rgba(255,255,255,0.6)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontWeight: 700,
-                fontSize: 20,
               }}
             >
-              {appName.charAt(0).toUpperCase()}
+              <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255,255,255,0.9)' }} />
             </div>
           )}
           <div>
@@ -157,7 +155,7 @@ export function RegisterPage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#F5F5F5',
+          background: '#e9eaea',
           padding: '32px 24px',
         }}
       >
@@ -169,10 +167,10 @@ export function RegisterPage() {
             width: '100%',
             maxWidth: 440,
             background: 'white',
-            borderRadius: 12,
-            border: '1px solid #E5E7EB',
-            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.07)',
-            padding: '40px 36px',
+            borderRadius: 16,
+            border: '1px solid #dcdddd',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+            padding: '36px 36px',
           }}
         >
           {successEmail ? (
@@ -193,7 +191,7 @@ export function RegisterPage() {
                 to="/login"
                 style={{
                   display: 'inline-block',
-                  color: '#D94F3D',
+                  color: '#d8452a',
                   fontWeight: 500,
                   fontSize: 14,
                   textDecoration: 'none',
@@ -215,15 +213,13 @@ export function RegisterPage() {
                       width: 32,
                       height: 32,
                       borderRadius: '50%',
-                      background: primaryColor,
+                      border: '1.5px solid #1b1c1e',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: 'white',
-                      fontWeight: 700,
                     }}
                   >
-                    {appName.charAt(0).toUpperCase()}
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#d8452a' }} />
                   </div>
                 )}
                 <span style={{ fontWeight: 700, fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -231,14 +227,14 @@ export function RegisterPage() {
                 </span>
               </div>
 
-              <h2 style={{ fontSize: 22, fontWeight: 700, color: '#1A1A1A', marginBottom: 6 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 600, color: '#1b1c1e', marginBottom: 6, letterSpacing: '-0.02em' }}>
                 Create Account
               </h2>
               <p style={{ fontSize: 13, color: '#6B7280', marginBottom: 28 }}>
                 Already have an account?{' '}
                 <Link
                   to="/login"
-                  style={{ color: '#D94F3D', fontWeight: 500, textDecoration: 'none' }}
+                  style={{ color: '#d8452a', fontWeight: 500, textDecoration: 'none' }}
                 >
                   Sign in
                 </Link>
@@ -364,12 +360,12 @@ export function RegisterPage() {
                     gap: 8,
                     width: '100%',
                     padding: '10px 16px',
-                    background: '#D94F3D',
+                    background: '#d8452a',
                     color: 'white',
                     fontWeight: 600,
                     fontSize: 14,
                     border: 'none',
-                    borderRadius: 6,
+                    borderRadius: 12,
                     cursor: register_mutation.isPending ? 'not-allowed' : 'pointer',
                     opacity: register_mutation.isPending ? 0.7 : 1,
                     transition: 'background 150ms',
@@ -377,10 +373,10 @@ export function RegisterPage() {
                   }}
                   onMouseEnter={(e) => {
                     if (!register_mutation.isPending)
-                      (e.currentTarget as HTMLElement).style.background = '#C0392B'
+                      (e.currentTarget as HTMLElement).style.background = '#c0402a'
                   }}
                   onMouseLeave={(e) => {
-                    ;(e.currentTarget as HTMLElement).style.background = '#D94F3D'
+                    ;(e.currentTarget as HTMLElement).style.background = '#d8452a'
                   }}
                 >
                   {register_mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}

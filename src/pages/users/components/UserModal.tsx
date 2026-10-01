@@ -102,7 +102,7 @@ export function UserModal({ open, onClose, user }: UserModalProps) {
             </label>
             <input
               {...register('name')}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#D94F3D]"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#d8452a]"
             />
             {errors.name && (
               <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>
@@ -116,7 +116,7 @@ export function UserModal({ open, onClose, user }: UserModalProps) {
             <input
               {...register('email')}
               type="email"
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#D94F3D]"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#d8452a]"
             />
             {errors.email && (
               <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
@@ -152,7 +152,7 @@ export function UserModal({ open, onClose, user }: UserModalProps) {
             <button
               type="submit"
               disabled={isPending}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-[#D94F3D] text-white hover:bg-[#C0392B] disabled:opacity-60 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-[#d8452a] text-white hover:bg-[#c0402a] disabled:opacity-60 transition-colors"
             >
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               {isEdit ? 'Save Changes' : 'Create User'}

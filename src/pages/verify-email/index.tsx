@@ -45,7 +45,7 @@ export function VerifyEmailPage() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 text-center">
         {status === 'loading' && (
           <div className="flex flex-col items-center gap-3">
-            <Loader2 className="h-8 w-8 animate-spin text-[#D94F3D]" />
+            <Loader2 className="h-8 w-8 animate-spin text-[#d8452a]" />
             <p className="text-gray-600">Memverifikasi email…</p>
           </div>
         )}
@@ -57,7 +57,7 @@ export function VerifyEmailPage() {
             </p>
             <Link
               to="/login"
-              className="inline-block text-[#D94F3D] hover:underline text-sm"
+              className="inline-block text-[#d8452a] hover:underline text-sm"
             >
               Masuk ke akun
             </Link>
@@ -80,12 +80,12 @@ export function VerifyEmailPage() {
                   value={resendEmail}
                   onChange={(e) => setResendEmail(e.target.value)}
                   placeholder="Masukkan email kamu"
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#D94F3D]"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#d8452a]"
                 />
                 <button
                   onClick={handleResend}
                   disabled={resendVerification.isPending}
-                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#D94F3D] hover:bg-[#C0392B] disabled:opacity-60 text-white font-medium py-2.5 text-sm transition-colors"
+                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#d8452a] hover:bg-[#c0402a] disabled:opacity-60 text-white font-medium py-2.5 text-sm transition-colors"
                 >
                   {resendVerification.isPending && (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -94,7 +94,7 @@ export function VerifyEmailPage() {
                 </button>
               </div>
             )}
-            <Link to="/login" className="block text-[#D94F3D] hover:underline text-sm">
+            <Link to="/login" className="block text-[#d8452a] hover:underline text-sm">
               Kembali ke Login
             </Link>
           </div>

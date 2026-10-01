@@ -104,7 +104,7 @@ export function DashboardPage() {
       {/* Alert card */}
       {showAlert && (
         <div className="alert-card">
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#D94F3D', marginBottom: 4 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#d8452a', marginBottom: 4 }}>
             Team Action Needed
           </div>
           <div style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}>
