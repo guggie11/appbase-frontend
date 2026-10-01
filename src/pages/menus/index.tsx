@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, GripVertical } from 'lucide-react'
 import type { Menu } from '@/shared/api/types'
 import { useMenus, useDeleteMenu, useUpdateMenu, useUpdateMenuOrder } from '@/features/menus/queries'
@@ -47,6 +47,7 @@ export function MenusPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editMenu, setEditMenu] = useState<Menu | null>(null)
   const [page, setPage] = useState(1)
+  const dragIdRef = useRef<string | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
 
   const roles = rolesRes?.data ?? []
@@ -162,13 +163,17 @@ export function MenusPage() {
                         outline: isDraggingOver ? '2px dashed var(--color-primary)' : undefined,
                         outlineOffset: -2,
                       }}
-                      onDragOver={(e) => { e.preventDefault(); setDragOverId(menu.id) }}
-                      onDragLeave={() => setDragOverId(null)}
+                      onDragOver={(e) => { e.preventDefault(); if (dragOverId !== menu.id) setDragOverId(menu.id) }}
+                      onDragLeave={(e) => {
+                        // Hanya clear jika benar-benar keluar dari row (bukan masuk ke child)
+                        if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverId(null)
+                      }}
                       onDrop={(e) => {
                         e.preventDefault()
-                        const fromId = e.dataTransfer.getData('text/plain')
-                        if (fromId) handleReorder(fromId, menu.id)
+                        const fromId = dragIdRef.current
                         setDragOverId(null)
+                        dragIdRef.current = null
+                        if (fromId && fromId !== menu.id) handleReorder(fromId, menu.id)
                       }}
                       onMouseEnter={(e) => {
                         if (!dragOverId) (e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.02)'
@@ -182,9 +187,11 @@ export function MenusPage() {
                         <div
                           draggable
                           onDragStart={(e) => {
+                            dragIdRef.current = menu.id
+                            e.dataTransfer.effectAllowed = 'move'
                             e.dataTransfer.setData('text/plain', menu.id)
                           }}
-                          onDragEnd={() => setDragOverId(null)}
+                          onDragEnd={() => { dragIdRef.current = null; setDragOverId(null) }}
                           style={{ cursor: 'grab', color: '#D1D5DB', padding: '0 4px', display: 'flex', alignItems: 'center' }}
                           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#6B7280' }}
                           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#D1D5DB' }}
