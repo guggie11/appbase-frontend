@@ -87,7 +87,8 @@ describe('Sidebar Archie v4 spec', () => {
 
     const parent = screen.getByRole('button', { name: /administration/i })
     // The parent of the active child must stay flat — a raised white card
-    // there outranks the item that is actually selected.
+    // there outranks the item that is actually selected. A quiet tint is
+    // allowed so the ancestor is still locatable.
     expect(parent.style.boxShadow).toBe('')
     expect(parent.style.background).not.toBe('#ffffff')
   })

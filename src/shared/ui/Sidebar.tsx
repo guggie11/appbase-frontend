@@ -16,6 +16,7 @@ import type { LucideIcon } from 'lucide-react'
 import { useMyMenu } from '@/features/menus/queries'
 import { useAuthStore } from '@/features/auth/store'
 import { useThemeStore } from '@/shared/config/theme'
+import { isAdminPathActive } from '@/pages/administration/tabs'
 import type { MenuTree, UserDetail } from '@/shared/api/types'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -67,13 +68,13 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
 
   const Icon = getLucideIcon(item.icon)
   const hasChildren = item.children && item.children.length > 0
-  const isActive =
-    item.path !== null && location.pathname.startsWith(item.path)
-  const isChildActive =
-    hasChildren &&
-    item.children.some(
-      (c) => c.path !== null && location.pathname.startsWith(c.path),
-    )
+  const matches = (path: string | null) =>
+    path !== null &&
+    (location.pathname.startsWith(path) ||
+      isAdminPathActive(path, location.pathname, location.search))
+
+  const isActive = matches(item.path)
+  const isChildActive = hasChildren && item.children.some((c) => matches(c.path))
 
   useEffect(() => {
     if (isChildActive) setOpen(true)
@@ -145,9 +146,11 @@ function NavItem({ item, collapsed, depth = 0 }: NavItemProps) {
           style={
             isChildActive
               ? {
-                  // Parent of the active item: label emphasis only. A filled
-                  // pill here competes with the active leaf for attention.
+                  // Ancestor of the active item: label emphasis plus a quiet
+                  // tint. Without any mark at all, only the expanded chevron
+                  // hinted at where the user was.
                   ...inactiveStyle,
+                  background: 'rgba(0,0,0,0.035)',
                   color: '#1b1c1e',
                   fontWeight: 500,
                 }

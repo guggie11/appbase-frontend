@@ -121,7 +121,7 @@ export function MenusPage() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--color-text-primary)', marginBottom: 2 }}>Menu Management</h1>
+          {/* Heading lives on the Admin Console tab; repeating it here duplicated the label. */}
           <p style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>Manage navigation menus and their role assignments</p>
         </div>
         <button

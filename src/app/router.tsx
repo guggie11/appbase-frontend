@@ -124,48 +124,24 @@ export const router = createBrowserRouter([
     },
   },
   {
-    path: '/users',
+    // The four admin areas now live as tabs inside one console.
+    path: '/administration',
     lazy: async () => {
-      const { UsersPage } = await import('../pages/users')
+      const { AdministrationPage } = await import('../pages/administration')
       return {
         Component: () => (
           <WithLayout>
-            <PermissionRoute permission="users.read">
-              <UsersPage />
-            </PermissionRoute>
+            <AdministrationPage />
           </WithLayout>
         ),
       }
     },
   },
-  {
-    path: '/roles',
-    lazy: async () => {
-      const { RolesPage } = await import('../pages/roles')
-      return {
-        Component: () => (
-          <WithLayout>
-            <PermissionRoute permission="roles.read">
-              <RolesPage />
-            </PermissionRoute>
-          </WithLayout>
-        ),
-      }
-    },
-  },
-  {
-    path: '/menus',
-    lazy: async () => {
-      const { MenusPage } = await import('../pages/menus')
-      return {
-        Component: () => (
-          <WithLayout>
-            <MenusPage />
-          </WithLayout>
-        ),
-      }
-    },
-  },
+  // Pre-console routes stay alive as redirects so old bookmarks and links
+  // do not break.
+  { path: '/users', element: <Navigate to="/administration?tab=users" replace /> },
+  { path: '/roles', element: <Navigate to="/administration?tab=roles" replace /> },
+  { path: '/menus', element: <Navigate to="/administration?tab=menus" replace /> },
   {
     path: '/profile',
     lazy: async () => {
@@ -194,21 +170,7 @@ export const router = createBrowserRouter([
       }
     },
   },
-  {
-    path: '/settings',
-    lazy: async () => {
-      const { SettingsPage } = await import('../pages/settings')
-      return {
-        Component: () => (
-          <WithLayout>
-            <PermissionRoute permission="settings.read">
-              <SettingsPage />
-            </PermissionRoute>
-          </WithLayout>
-        ),
-      }
-    },
-  },
+  { path: '/settings', element: <Navigate to="/administration?tab=appearance" replace /> },
   {
     path: '*',
     lazy: async () => {

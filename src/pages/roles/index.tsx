@@ -144,7 +144,7 @@ export function RolesPage() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1A1A1A', marginBottom: 2 }}>Roles & Permissions</h1>
+          {/* Heading lives on the Admin Console tab; repeating it here duplicated the label. */}
           <p style={{ fontSize: 13, color: '#6B7280' }}>Manage roles and their permissions</p>
         </div>
         <button
