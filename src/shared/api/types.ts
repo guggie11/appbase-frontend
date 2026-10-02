@@ -24,6 +24,9 @@ export interface UserDetail extends User {
   is_verified: boolean
   last_login_at: string | null
   created_at: string
+  roles?: Array<{ id: string; name: string; slug: string }>
+  /** Flat permission slugs from /auth/me, e.g. "users.read". */
+  permissions?: string[]
 }
 
 export interface TokenData {

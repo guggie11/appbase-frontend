@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { apiClient } from '@/shared/api/client'
 import { useAuthStore } from './store'
+import { toAuthUser } from './usePermission'
 import type { ApiSuccess, TokenData } from '@/shared/api/types'
 
 // POST /auth/login
@@ -10,7 +11,14 @@ export function useLogin() {
   return useMutation({
     mutationFn: async (credentials: { email: string; password: string }) => {
       const res = await apiClient.post<ApiSuccess<TokenData>>('/auth/login', credentials)
-      return res.data.data
+      const data = res.data.data
+
+      // The login payload carries no roles or permissions, so the UI would be
+      // permission-blind until the next reload. Fetch the full identity once.
+      const me = await apiClient.get<ApiSuccess<Record<string, unknown>>>('/auth/me', {
+        headers: { Authorization: `Bearer ${data.access_token}` },
+      })
+      return { ...data, user: toAuthUser(me.data.data) }
     },
     onSuccess: (data) => {
       setAuth(data.user, data.access_token)

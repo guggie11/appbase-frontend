@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { apiClient } from '@/shared/api/client'
 import { useAuthStore } from './store'
+import { toAuthUser } from './usePermission'
 import { useThemeStore } from '@/shared/config/theme'
 import type { ApiSuccess, TokenData, UserDetail } from '@/shared/api/types'
 
@@ -23,10 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           headers: { Authorization: `Bearer ${token}` },
         })
         const me = meRes.data.data
-        setAuth(
-          { id: me.id, name: me.name, email: me.email, status: me.status },
-          token,
-        )
+        setAuth(toAuthUser(me as unknown as Record<string, unknown>), token)
       } catch {
         // Not logged in — no-op
       } finally {
