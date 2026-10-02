@@ -466,7 +466,7 @@ export function SettingsPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1A1A1A', marginBottom: 2 }}>App Settings</h1>
+        {/* Heading lives on the Admin Console tab; repeating it here duplicated the label. */}
         <p style={{ fontSize: 13, color: '#6B7280' }}>
           Manage app settings and customize the appearance of your app.
         </p>

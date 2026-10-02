@@ -185,8 +185,9 @@ export function UsersPage() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1A1A1A', marginBottom: 2 }}>Users</h1>
-          <p style={{ fontSize: 13, color: '#6B7280' }}>Manage user accounts and roles</p>
+          {/* Heading lives on the Admin Console tab; repeating it here showed
+              "Users" twice within 60px. */}
+          <p style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>Manage user accounts and roles</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button

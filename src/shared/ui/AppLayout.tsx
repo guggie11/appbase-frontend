@@ -4,13 +4,19 @@ import { Sidebar } from './Sidebar'
 import { NotificationBell } from './NotificationBell'
 import { useAuthStore } from '@/features/auth/store'
 import { useThemeStore } from '@/shared/config/theme'
+import { ADMIN_TABS, adminTitleFor } from '@/pages/administration/tabs'
 import type { UserDetail } from '@/shared/api/types'
 
 interface AppLayoutProps {
   children: React.ReactNode
 }
 
-function getPageTitle(pathname: string): string {
+function getPageTitle(pathname: string, search: string): string {
+  // The console is one route with four areas, so the tab decides the label.
+  if (pathname.startsWith('/administration')) {
+    return adminTitleFor(new URLSearchParams(search).get('tab') ?? ADMIN_TABS[0].id)
+  }
+
   const map: Record<string, string> = {
     '/dashboard': 'Dashboard',
     '/users': 'Users',
@@ -30,7 +36,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation()
   const user = useAuthStore((s) => s.user)
   const { appName } = useThemeStore()
-  const title = getPageTitle(location.pathname)
+  const title = getPageTitle(location.pathname, location.search)
   const userDetail = user as unknown as UserDetail | null
 
   const initials = user?.name
