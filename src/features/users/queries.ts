@@ -107,3 +107,55 @@ export function useRolesForSelect() {
     },
   })
 }
+
+
+export interface ImportReport {
+  created: number
+  failed: number
+  errors: { row: number; reason: string }[]
+}
+
+export function useBulkRoles() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (body: {
+      user_ids: string[]
+      role_ids: string[]
+      action: 'add' | 'remove'
+    }) => {
+      const res = await apiClient.post<ApiSuccess<Record<string, number>>>(
+        '/users/bulk/roles',
+        body,
+      )
+      return res.data.data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
+  })
+}
+
+export function useBulkStatus() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (body: { user_ids: string[]; status: string }) => {
+      const res = await apiClient.post<ApiSuccess<Record<string, number>>>(
+        '/users/bulk/status',
+        body,
+      )
+      return res.data.data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
+  })
+}
+
+export function useImportUsers() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const form = new FormData()
+      form.append('file', file)
+      const res = await apiClient.post<ApiSuccess<ImportReport>>('/users/import', form)
+      return res.data.data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
+  })
+}
