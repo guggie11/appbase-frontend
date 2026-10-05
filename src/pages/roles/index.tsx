@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react'
-import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, Shield, Settings } from 'lucide-react'
+import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, Copy, Lock, Settings } from 'lucide-react'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { Role } from '@/shared/api/types'
-import { useRoles, useDeleteRole, useUpdateRole } from '@/features/roles/queries'
+import { useRoles, useDeleteRole, useUpdateRole, useDuplicateRole } from '@/features/roles/queries'
+import { isRoleLocked, roleKindBadge } from './model'
 import { RoleModal } from './components/RoleModal'
 import { PermissionMatrix } from './components/PermissionMatrix'
 import { DeleteConfirmDialog } from '../users/components/DeleteConfirmDialog'
@@ -18,6 +19,7 @@ export function RolesPage() {
   const { data, isLoading } = useRoles(page, 10)
   const deleteMutation = useDeleteRole()
   const updateRole = useUpdateRole()
+  const duplicateRole = useDuplicateRole()
 
   const roles: Role[] = data?.data ?? []
   const meta = data?.meta
@@ -29,18 +31,29 @@ export function RolesPage() {
         header: 'Name',
         cell: ({ row }) => {
           const role = row.original
+          const badge = roleKindBadge(role.kind)
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontWeight: 500, color: '#1A1A1A' }}>{role.name}</span>
-              {role.is_system && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 9999, fontSize: 11, fontWeight: 500, background: '#F3F4F6', color: '#6B7280' }}>
-                  <Shield size={10} />
-                  system
-                </span>
-              )}
+              <span
+                data-testid={`role-kind-${role.slug}`}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 9999, fontFamily: 'Geist Mono, monospace', fontSize: 10, letterSpacing: '0.06em', fontWeight: 600, background: badge.background, color: badge.color }}
+              >
+                {isRoleLocked(role) && <Lock size={9} aria-hidden="true" />}
+                {badge.label}
+              </span>
             </div>
           )
         },
+      },
+      {
+        id: 'users',
+        header: 'Users',
+        cell: ({ row }) => (
+          <span style={{ fontFamily: 'Geist Mono, monospace', fontSize: 12, color: '#6c6e70' }}>
+            {row.original.user_count ?? 0}
+          </span>
+        ),
       },
       {
         accessorKey: 'slug',
@@ -65,8 +78,9 @@ export function RolesPage() {
           const role = row.original
           return (
             <button
-              onClick={() => !role.is_system && updateRole.mutate({ id: role.id, is_active: !role.is_active })}
-              disabled={role.is_system}
+              onClick={() => !isRoleLocked(role) && !role.is_system && updateRole.mutate({ id: role.id, is_active: !role.is_active })}
+              disabled={isRoleLocked(role) || role.is_system}
+              aria-label={`Toggle ${role.name} active`}
               style={{
                 position: 'relative',
                 width: 36,
@@ -74,8 +88,8 @@ export function RolesPage() {
                 borderRadius: 9999,
                 border: 'none',
                 background: role.is_active ? '#10B981' : '#E5E7EB',
-                cursor: role.is_system ? 'not-allowed' : 'pointer',
-                opacity: role.is_system ? 0.5 : 1,
+                cursor: isRoleLocked(role) || role.is_system ? 'not-allowed' : 'pointer',
+                opacity: isRoleLocked(role) || role.is_system ? 0.5 : 1,
                 transition: 'background 150ms',
                 display: 'flex',
                 alignItems: 'center',
@@ -102,6 +116,7 @@ export function RolesPage() {
         header: 'Actions',
         cell: ({ row }) => {
           const role = row.original
+          const locked = isRoleLocked(role)
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <button
@@ -114,19 +129,36 @@ export function RolesPage() {
                 <Settings size={14} />
               </button>
               <button
-                onClick={() => { setEditRole(role); setModalOpen(true) }}
+                onClick={() => {
+                  const name = window.prompt(`Duplicate "${role.name}" as:`, `${role.name} Copy`)
+                  if (name?.trim()) duplicateRole.mutate({ id: role.id, name: name.trim() })
+                }}
+                title="Duplicate this role with all its permissions"
+                data-testid={`duplicate-${role.slug}`}
                 style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', transition: 'color 150ms, background 150ms' }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; (e.currentTarget as HTMLElement).style.color = '#d8452a' }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
+              >
+                <Copy size={14} />
+              </button>
+              <button
+                onClick={() => { if (!locked) { setEditRole(role); setModalOpen(true) } }}
+                disabled={locked}
+                title={locked ? 'Platform roles cannot be edited' : 'Edit'}
+                data-testid={`edit-${role.slug}`}
+                style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: locked ? 'not-allowed' : 'pointer', color: '#9CA3AF', display: 'flex', opacity: locked ? 0.4 : 1, transition: 'color 150ms, background 150ms' }}
+                onMouseEnter={(e) => { if (!locked) { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; (e.currentTarget as HTMLElement).style.color = '#d8452a' } }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
               >
                 <Pencil size={14} />
               </button>
               <button
-                onClick={() => !role.is_system && setDeleteRole(role)}
-                disabled={role.is_system}
-                title={role.is_system ? 'System roles cannot be deleted' : 'Delete'}
-                style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: role.is_system ? 'not-allowed' : 'pointer', color: '#9CA3AF', display: 'flex', opacity: role.is_system ? 0.4 : 1, transition: 'color 150ms, background 150ms' }}
-                onMouseEnter={(e) => { if (!role.is_system) { (e.currentTarget as HTMLElement).style.background = '#FEF2F2'; (e.currentTarget as HTMLElement).style.color = '#EF4444' } }}
+                onClick={() => !locked && !role.is_system && setDeleteRole(role)}
+                disabled={locked || role.is_system}
+                title={locked ? 'Platform roles cannot be deleted' : role.is_system ? 'System roles cannot be deleted' : 'Delete'}
+                data-testid={`delete-${role.slug}`}
+                style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: locked || role.is_system ? 'not-allowed' : 'pointer', color: '#9CA3AF', display: 'flex', opacity: locked || role.is_system ? 0.4 : 1, transition: 'color 150ms, background 150ms' }}
+                onMouseEnter={(e) => { if (!locked && !role.is_system) { (e.currentTarget as HTMLElement).style.background = '#FEF2F2'; (e.currentTarget as HTMLElement).style.color = '#EF4444' } }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
               >
                 <Trash2 size={14} />
@@ -136,7 +168,7 @@ export function RolesPage() {
         },
       },
     ],
-    [updateRole],
+    [updateRole, duplicateRole],
   )
 
   return (
@@ -147,31 +179,37 @@ export function RolesPage() {
           {/* Heading lives on the Admin Console tab; repeating it here duplicated the label. */}
           <p style={{ fontSize: 13, color: '#6B7280' }}>Manage roles and their permissions</p>
         </div>
-        <button
-          onClick={() => { setEditRole(null); setModalOpen(true) }}
-          className="btn-primary"
-        >
-          <Plus size={14} />
-          Create Role
-        </button>
+        {/* Hidden while a role detail is open: creating a role is an action on
+            the list, and offering it here invites a misclick. */}
+        {!permRole && (
+          <button
+            onClick={() => { setEditRole(null); setModalOpen(true) }}
+            className="btn-primary"
+          >
+            <Plus size={14} />
+            Create Role
+          </button>
+        )}
       </div>
 
       {/* Permission Matrix Panel */}
       {permRole && (
-        <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: 8, padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+        <div style={{ background: 'white', border: '1px solid #e2e3e3', borderRadius: 14, padding: 20, boxShadow: '0 1px 2px rgba(27,28,30,0.06)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <div>
-              <div className="section-label" style={{ marginBottom: 4 }}>Permission Matrix</div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}>{permRole.name}</div>
+              {/* The role name is the heading; "Permission Matrix" above it
+                  put the same idea on screen twice and promised a grid. */}
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#1b1c1e' }}>{permRole.name}</div>
             </div>
             <button
               onClick={() => setPermRole(null)}
-              style={{ fontSize: 12, color: '#9CA3AF', background: 'transparent', border: 'none', cursor: 'pointer' }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#44474a', background: 'transparent', border: '1px solid #e2e3e3', borderRadius: 10, padding: '7px 12px', cursor: 'pointer' }}
             >
-              Close ✕
+              <ChevronLeft size={14} aria-hidden="true" />
+              Back to roles
             </button>
           </div>
-          <PermissionMatrix roleId={permRole.id} roleName={permRole.name} />
+          <PermissionMatrix roleId={permRole.id} role={permRole} />
         </div>
       )}
 

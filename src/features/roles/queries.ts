@@ -53,6 +53,19 @@ export function useUpdateRole() {
   })
 }
 
+export function useDuplicateRole() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      // The backend copies every permission across; the copy always comes
+      // back as a custom role so it does not inherit the platform lock.
+      const res = await apiClient.post<ApiSuccess<Role>>(`/roles/${id}/duplicate`, { name })
+      return res.data.data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['roles'] }),
+  })
+}
+
 export function useDeleteRole() {
   const qc = useQueryClient()
   return useMutation({
@@ -93,7 +106,11 @@ export function usePermissions() {
   return useQuery({
     queryKey: ['permissions'],
     queryFn: async () => {
-      const res = await apiClient.get<ApiSuccess<Permission[]>>('/permissions')
+      // Trailing slash avoids a 307. The envelope is now consistent with
+      // every other endpoint — see appbase-backend: this route used to
+      // return a bare array, so res.data.data was undefined and the matrix
+      // silently rendered "0 / 0".
+      const res = await apiClient.get<ApiSuccess<Permission[]>>('/permissions/')
       return res.data.data
     },
   })

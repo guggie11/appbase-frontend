@@ -42,6 +42,10 @@ export interface Role {
   description: string | null
   is_system: boolean
   is_active: boolean
+  /** platform | built-in | custom — drives the badge and the edit lock. */
+  kind?: string
+  /** How many users hold this role. */
+  user_count?: number
 }
 
 export interface Permission {
@@ -50,6 +54,12 @@ export interface Permission {
   slug: string
   module: string
   action: string
+  /** Plain sentence explaining what ticking this allows. */
+  description?: string | null
+  /** Section of the matrix this row belongs to. */
+  group?: string | null
+  /** Destructive — surfaced in red so it is not ticked casually. */
+  is_dangerous?: boolean
 }
 
 export interface UserWithRoles extends User {
