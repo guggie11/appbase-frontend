@@ -24,6 +24,21 @@ export function useMyMenu() {
   })
 }
 
+export function useMenuPreview(roleSlug: string | null) {
+  return useQuery({
+    // Role is part of the key, otherwise switching roles shows the cached
+    // tree of the previous one.
+    queryKey: ['menus', 'preview', roleSlug],
+    enabled: Boolean(roleSlug),
+    queryFn: async () => {
+      const res = await apiClient.get<ApiSuccess<MenuTree[]>>('/menus/my-menu', {
+        params: { preview_role: roleSlug },
+      })
+      return res.data.data
+    },
+  })
+}
+
 // ── Mutations ──────────────────────────────────────────────────────────────
 
 interface MenuPayload {

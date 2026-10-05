@@ -88,6 +88,8 @@ export interface Menu {
   parent_id: string | null
   order_index: number
   is_active: boolean
+  /** Permission slug needed to see this item; null means public. */
+  required_permission?: string | null
   roles?: Role[]
   children: MenuTree[]
 }

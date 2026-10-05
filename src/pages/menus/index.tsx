@@ -1,10 +1,13 @@
-import { useState, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo, useEffect } from 'react'
 import { Plus, Pencil, Trash2, GripVertical, ChevronUp, ChevronDown, Check, AlertCircle, X } from 'lucide-react'
 import type { Menu } from '@/shared/api/types'
 import { useMenus, useDeleteMenu, useUpdateMenu, useReorderMenus } from '@/features/menus/queries'
 import { useRoles } from '@/features/roles/queries'
 import { MenuModal } from './components/MenuModal'
+import { MenuPreview } from './components/MenuPreview'
 import { buildDisplayRows, planReorder } from './ordering'
+import { describeRequirement, setPermissionCatalogue } from './permissions'
+import { usePermissions } from '@/features/roles/queries'
 
 // ── Table styles ────────────────────────────────────────────────────────────
 
@@ -42,12 +45,19 @@ const tdStyle: React.CSSProperties = {
 export function MenusPage() {
   const { data: menus = [], isLoading } = useMenus()
   const { data: rolesRes } = useRoles(1, 100)
+  // Feeds the form's slug validation and its autocomplete list. Without this
+  // the validator has no catalogue and stays permissive forever.
+  const { data: allPermissions = [] } = usePermissions()
+  useEffect(() => {
+    setPermissionCatalogue(allPermissions.map((p) => p.slug))
+  }, [allPermissions])
   const deleteMenu = useDeleteMenu()
   const updateMenu = useUpdateMenu()
   const reorderMenus = useReorderMenus()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editMenu, setEditMenu] = useState<Menu | null>(null)
+  const [previewRole, setPreviewRole] = useState<string | null>(null)
   const dragIdRef = useRef<string | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
   const [notice, setNotice] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
@@ -181,6 +191,13 @@ export function MenusPage() {
         </div>
       )}
 
+      {/* Preview — the table shows rules, this shows the result */}
+      <MenuPreview
+        roles={roles.map((r) => ({ id: r.id, slug: r.slug, name: r.name }))}
+        roleSlug={previewRole}
+        onChange={setPreviewRole}
+      />
+
       {/* Table */}
       <div style={tableContainerStyle}>
         <div style={{ overflowX: 'auto' }}>
@@ -193,6 +210,7 @@ export function MenusPage() {
                 <th style={thStyle}>Label</th>
                 <th style={thStyle}>Icon</th>
                 <th style={thStyle}>Path</th>
+                <th style={thStyle}>Visibility</th>
                 <th style={thStyle}>Parent</th>
                 <th style={thStyle}>Status</th>
                 <th style={thStyle}>Roles</th>
@@ -363,6 +381,21 @@ export function MenusPage() {
                         <code style={{ fontSize: 12, color: '#6B7280', background: '#F9FAFB', padding: '2px 6px', borderRadius: 4, border: '1px solid #E5E7EB' }}>
                           {menu.path ?? '—'}
                         </code>
+                      </td>
+
+                      {/* Visibility — which permission gates this item */}
+                      <td style={tdStyle}>
+                        {menu.required_permission ? (
+                          <code
+                            data-testid={`menu-perm-${menu.id}`}
+                            title={describeRequirement(menu.required_permission)}
+                            style={{ fontSize: 12, color: '#44474a', background: '#f4f4f4', padding: '2px 6px', borderRadius: 4, border: '1px solid #e2e3e3' }}
+                          >
+                            {menu.required_permission}
+                          </code>
+                        ) : (
+                          <span style={{ fontSize: 12, color: '#8a8c8e' }}>Everyone</span>
+                        )}
                       </td>
 
                       {/* Parent */}
