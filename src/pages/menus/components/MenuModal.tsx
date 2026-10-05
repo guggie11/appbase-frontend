@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { X } from 'lucide-react'
 import * as LucideIcons from 'lucide-react'
 import type { Menu } from '@/shared/api/types'
+import { permissionExists, knownPermissions } from '../permissions'
 import type { Role } from '@/shared/api/types'
 import {
   useCreateMenu,
@@ -33,6 +34,14 @@ export const schema = z.object({
       message: 'Unknown icon — use a Lucide name such as ShieldCheck or Users',
     }),
   path: z.string().optional(),
+  // A typo here hides the menu from everyone with no error anywhere — the
+  // gate simply never matches. Validate against the real catalogue.
+  required_permission: z
+    .string()
+    .optional()
+    .refine((v) => permissionExists(v ?? ''), {
+      message: 'Unknown permission — pick one from the list',
+    }),
   parent_id: z.string().optional(),
   is_active: z.boolean(),
   role_ids: z.array(z.string()),
@@ -92,6 +101,7 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
       icon: '',
       path: '',
       parent_id: '',
+      required_permission: '',
       is_active: true,
       role_ids: [],
     },
@@ -106,6 +116,7 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
             label: editMenu.label,
             icon: editMenu.icon ?? '',
             path: editMenu.path ?? '',
+            required_permission: editMenu.required_permission ?? '',
             parent_id: editMenu.parent_id ?? '',
             is_active: editMenu.is_active,
             role_ids: (editMenu.roles ?? []).map((r) => r.id.toString()),
@@ -115,6 +126,7 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
             icon: '',
             path: '',
             parent_id: '',
+            required_permission: '',
             is_active: true,
             role_ids: [],
           })
@@ -139,6 +151,8 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
         icon: values.icon || null,
         path: values.path || null,
         parent_id: values.parent_id || null,
+        // Empty string clears the requirement; the backend reads "" as public.
+        required_permission: values.required_permission ?? '',
         is_active: values.is_active,
         role_ids: values.role_ids,
       }
@@ -280,6 +294,43 @@ export function MenuModal({ open, onClose, editMenu, menus, roles }: MenuModalPr
                 onFocus={() => setFocusedField('path')}
                 onBlur={() => setFocusedField(null)}
               />
+            </div>
+
+            {/* Required permission — what a user must hold to see this item */}
+            <div>
+              <label style={labelStyle}>Required permission</label>
+              <input
+                {...register('required_permission')}
+                list="permission-catalogue"
+                placeholder="Leave empty to show to everyone"
+                data-testid="required-permission-input"
+                style={{
+                  ...inputStyle,
+                  borderColor: errors.required_permission
+                    ? '#c0392b'
+                    : focusedField === 'perm'
+                      ? 'var(--color-primary)'
+                      : 'var(--color-border)',
+                  boxShadow: focusedField === 'perm' ? '0 0 0 3px rgba(216,69,42,0.1)' : 'none',
+                }}
+                onFocus={() => setFocusedField('perm')}
+                onBlur={() => setFocusedField(null)}
+              />
+              <datalist id="permission-catalogue">
+                {knownPermissions().map((slug) => (
+                  <option key={slug} value={slug} />
+                ))}
+              </datalist>
+              {errors.required_permission ? (
+                <p style={{ marginTop: 5, fontSize: 12, color: '#c0392b' }}>
+                  {errors.required_permission.message as string}
+                </p>
+              ) : (
+                <p style={{ marginTop: 5, fontSize: 12, color: '#6c6e70' }}>
+                  Anyone holding this permission sees the item — including roles
+                  created later.
+                </p>
+              )}
             </div>
 
             {/* Parent Menu */}
