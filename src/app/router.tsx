@@ -170,7 +170,8 @@ export const router = createBrowserRouter([
       }
     },
   },
-  { path: '/settings', element: <Navigate to="/administration?tab=appearance" replace /> },
+  { path: '/settings', element: <Navigate to="/administration?tab=settings" replace /> },
+  { path: '/appearance', element: <Navigate to="/administration?tab=appearance" replace /> },
   {
     path: '*',
     lazy: async () => {

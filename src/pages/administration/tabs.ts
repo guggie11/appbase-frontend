@@ -21,7 +21,8 @@ export const ADMIN_TABS: AdminTab[] = [
   { id: 'users', label: 'Users', permission: 'users.read', legacyPath: '/users' },
   { id: 'roles', label: 'Roles & Permissions', permission: 'roles.read', legacyPath: '/roles' },
   { id: 'menus', label: 'Menu Management', permission: 'menu.read', legacyPath: '/menus' },
-  { id: 'appearance', label: 'Settings', permission: 'settings.read', legacyPath: '/settings' },
+  { id: 'appearance', label: 'Appearance', permission: 'settings.read', legacyPath: '/appearance' },
+  { id: 'settings', label: 'Settings', permission: 'settings.read', legacyPath: '/settings' },
 ]
 
 /**

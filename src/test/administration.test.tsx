@@ -12,6 +12,7 @@ vi.mock('@/pages/users', () => ({ UsersPage: () => <div>users-panel</div> }))
 vi.mock('@/pages/roles', () => ({ RolesPage: () => <div>roles-panel</div> }))
 vi.mock('@/pages/menus', () => ({ MenusPage: () => <div>menus-panel</div> }))
 vi.mock('@/pages/settings', () => ({ SettingsPage: () => <div>settings-panel</div> }))
+vi.mock('@/pages/appearance', () => ({ AppearancePage: () => <div>appearance-panel</div> }))
 
 const granted = new Set<string>()
 vi.mock('@/features/auth/usePermission', () => ({
@@ -62,7 +63,7 @@ describe('resolveTab', () => {
 describe('adminTitleFor', () => {
   it('names the active area so the breadcrumb is not "Appbase / Appbase"', () => {
     expect(adminTitleFor('users')).toBe('Administration / Users')
-    expect(adminTitleFor('appearance')).toBe('Administration / Settings')
+    expect(adminTitleFor('appearance')).toBe('Administration / Appearance')
   })
 
   it('falls back to the console name for an unknown tab', () => {
@@ -75,7 +76,8 @@ describe('isAdminPathActive', () => {
   it('keeps a legacy admin link highlighted while its tab is open', () => {
     // Menu items still store /users; the console lives at /administration.
     expect(isAdminPathActive('/users', '/administration', '?tab=users')).toBe(true)
-    expect(isAdminPathActive('/settings', '/administration', '?tab=appearance')).toBe(true)
+    expect(isAdminPathActive('/settings', '/administration', '?tab=settings')).toBe(true)
+    expect(isAdminPathActive('/appearance', '/administration', '?tab=appearance')).toBe(true)
   })
 
   it('does not highlight a link for a different tab', () => {
