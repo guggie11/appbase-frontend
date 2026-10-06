@@ -1,6 +1,7 @@
 import { apiClient } from '@/shared/api/client'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { ApiSuccess, PaginatedResponse, Role, Permission } from '@/shared/api/types'
+import type { MatrixAction, MatrixRow } from '@/pages/roles/matrix'
 
 export function useRoles(page = 1, per_page = 10) {
   return useQuery({
@@ -8,6 +9,22 @@ export function useRoles(page = 1, per_page = 10) {
     queryFn: async () => {
       const res = await apiClient.get<PaginatedResponse<Role>>(`/roles?page=${page}&per_page=${per_page}`)
       return res.data
+    },
+  })
+}
+
+/**
+ * The RESOURCE x ACTION grid. Served from the live catalogue, so a module
+ * added on the backend shows up here without a frontend change.
+ */
+export function usePermissionMatrix() {
+  return useQuery({
+    queryKey: ['permission-matrix'],
+    queryFn: async () => {
+      const res = await apiClient.get<ApiSuccess<{ actions: MatrixAction[]; rows: MatrixRow[] }>>(
+        '/permissions/matrix',
+      )
+      return res.data.data
     },
   })
 }
