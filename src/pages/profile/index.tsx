@@ -132,7 +132,7 @@ function EditProfileTab() {
           {avatarSrc ? (
             <img src={avatarSrc} alt="Avatar" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '2px solid #E5E7EB' }} />
           ) : (
-            <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#FFF5F3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 700, color: '#D94F3D', border: '2px solid #E5E7EB' }}>
+            <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 700, color: 'var(--color-primary)', border: '2px solid #E5E7EB' }}>
               {initials}
             </div>
           )}
@@ -176,7 +176,7 @@ function EditProfileTab() {
           <input
             {...register('name')}
             style={inputStyle}
-            onFocus={(e) => { e.target.style.borderColor = '#D94F3D'; e.target.style.boxShadow = '0 0 0 3px rgba(217,79,61,0.1)' }}
+            onFocus={(e) => { e.target.style.borderColor = 'var(--color-primary)'; e.target.style.boxShadow = '0 0 0 3px rgba(216,69,42,0.1)' }}
             onBlur={(e) => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none' }}
           />
           {errors.name && <p style={{ marginTop: 4, fontSize: 12, color: '#EF4444' }}>{errors.name.message}</p>}
@@ -221,7 +221,7 @@ function ChangePasswordTab() {
             {...register(id)}
             type={show ? 'text' : 'password'}
             style={{ ...inputStyle, paddingRight: 40 }}
-            onFocus={(e) => { e.target.style.borderColor = '#D94F3D'; e.target.style.boxShadow = '0 0 0 3px rgba(217,79,61,0.1)' }}
+            onFocus={(e) => { e.target.style.borderColor = 'var(--color-primary)'; e.target.style.boxShadow = '0 0 0 3px rgba(216,69,42,0.1)' }}
             onBlur={(e) => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none' }}
           />
           <button
@@ -375,7 +375,7 @@ export function ProfilePage() {
               fontWeight: 500,
               borderRadius: 9999,
               border: tab === key ? 'none' : '1px solid #E5E7EB',
-              background: tab === key ? '#D94F3D' : 'white',
+              background: tab === key ? 'var(--color-primary)' : 'white',
               color: tab === key ? 'white' : '#6B7280',
               cursor: 'pointer',
               transition: 'all 150ms',

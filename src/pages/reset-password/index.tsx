@@ -46,7 +46,7 @@ export function ResetPasswordPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 text-center">
           <p className="text-red-500 mb-4">Token tidak valid atau sudah kadaluarsa.</p>
-          <Link to="/forgot-password" className="text-[#D94F3D] hover:underline text-sm">
+          <Link to="/forgot-password" className="text-[var(--color-primary)] hover:underline text-sm">
             Minta link reset baru
           </Link>
         </div>
@@ -87,7 +87,7 @@ export function ResetPasswordPage() {
               {...register('password')}
               type="password"
               autoComplete="new-password"
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#D94F3D]"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
               placeholder="••••••••"
             />
             {errors.password && (
@@ -103,7 +103,7 @@ export function ResetPasswordPage() {
               {...register('confirmPassword')}
               type="password"
               autoComplete="new-password"
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#D94F3D]"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
               placeholder="••••••••"
             />
             {errors.confirmPassword && (
@@ -120,7 +120,7 @@ export function ResetPasswordPage() {
           <button
             type="submit"
             disabled={resetPassword.isPending}
-            className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#D94F3D] hover:bg-[#C0392B] disabled:opacity-60 text-white font-medium py-2.5 text-sm transition-colors"
+            className="w-full flex items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] disabled:opacity-60 text-white font-medium py-2.5 text-sm transition-colors"
           >
             {resetPassword.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
             Reset Password

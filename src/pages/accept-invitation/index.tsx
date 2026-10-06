@@ -85,7 +85,7 @@ export function AcceptInvitationPage() {
       <div
         style={{
           flex: '0 0 45%',
-          background: '#D94F3D',
+          background: 'var(--color-primary)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
@@ -151,7 +151,7 @@ export function AcceptInvitationPage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#F5F5F5',
+          background: '#e9eaea',
           padding: '32px 24px',
         }}
       >
@@ -172,7 +172,7 @@ export function AcceptInvitationPage() {
           {/* No token */}
           {!token ? (
             <div style={{ textAlign: 'center', padding: '16px 0' }}>
-              <XCircle size={56} style={{ color: '#D94F3D', margin: '0 auto 20px' }} />
+              <XCircle size={56} style={{ color: 'var(--color-primary)', margin: '0 auto 20px' }} />
               <h2 style={{ fontSize: 22, fontWeight: 700, color: '#1A1A1A', marginBottom: 10 }}>
                 Invalid or Expired Link
               </h2>
@@ -194,7 +194,7 @@ export function AcceptInvitationPage() {
                 to="/login"
                 style={{
                   display: 'inline-block',
-                  color: '#D94F3D',
+                  color: 'var(--color-primary)',
                   fontWeight: 500,
                   fontSize: 14,
                   textDecoration: 'none',
@@ -209,7 +209,7 @@ export function AcceptInvitationPage() {
               apiError.toLowerCase().includes('not found')) ? (
             /* Token invalid/expired state */
             <div style={{ textAlign: 'center', padding: '16px 0' }}>
-              <XCircle size={56} style={{ color: '#D94F3D', margin: '0 auto 20px' }} />
+              <XCircle size={56} style={{ color: 'var(--color-primary)', margin: '0 auto 20px' }} />
               <h2 style={{ fontSize: 22, fontWeight: 700, color: '#1A1A1A', marginBottom: 10 }}>
                 Invalid or Expired Link
               </h2>
@@ -227,7 +227,7 @@ export function AcceptInvitationPage() {
                     width: 32,
                     height: 32,
                     borderRadius: '50%',
-                    background: '#D94F3D',
+                    background: 'var(--color-primary)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -335,7 +335,7 @@ export function AcceptInvitationPage() {
                     gap: 8,
                     width: '100%',
                     padding: '10px 16px',
-                    background: '#D94F3D',
+                    background: 'var(--color-primary)',
                     color: 'white',
                     fontWeight: 600,
                     fontSize: 14,
@@ -348,10 +348,10 @@ export function AcceptInvitationPage() {
                   }}
                   onMouseEnter={(e) => {
                     if (!mutation.isPending)
-                      (e.currentTarget as HTMLElement).style.background = '#C0392B'
+                      (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-hover)'
                   }}
                   onMouseLeave={(e) => {
-                    ;(e.currentTarget as HTMLElement).style.background = '#D94F3D'
+                    ;(e.currentTarget as HTMLElement).style.background = 'var(--color-primary)'
                   }}
                 >
                   {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}

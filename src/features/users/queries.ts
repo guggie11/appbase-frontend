@@ -40,8 +40,26 @@ export function useCreateUser() {
 export function useUpdateUser() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, ...data }: { id: string; name?: string; email?: string }) => {
+    mutationFn: async ({
+      id,
+      role_ids,
+      ...data
+    }: {
+      id: string
+      name?: string
+      email?: string
+      role_ids?: string[]
+    }) => {
       const res = await apiClient.put<ApiSuccess<UserWithRoles>>(`/users/${id}`, data)
+      // Roles live behind a dedicated endpoint; PUT /users/{id} ignores them,
+      // so without this call role edits are silently discarded.
+      if (role_ids) {
+        const withRoles = await apiClient.post<ApiSuccess<UserWithRoles>>(
+          `/users/${id}/roles`,
+          { role_ids },
+        )
+        return withRoles.data.data
+      }
       return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
@@ -87,5 +105,57 @@ export function useRolesForSelect() {
       const res = await apiClient.get<PaginatedResponse<Role>>('/roles?per_page=100')
       return res.data.data
     },
+  })
+}
+
+
+export interface ImportReport {
+  created: number
+  failed: number
+  errors: { row: number; reason: string }[]
+}
+
+export function useBulkRoles() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (body: {
+      user_ids: string[]
+      role_ids: string[]
+      action: 'add' | 'remove'
+    }) => {
+      const res = await apiClient.post<ApiSuccess<Record<string, number>>>(
+        '/users/bulk/roles',
+        body,
+      )
+      return res.data.data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
+  })
+}
+
+export function useBulkStatus() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (body: { user_ids: string[]; status: string }) => {
+      const res = await apiClient.post<ApiSuccess<Record<string, number>>>(
+        '/users/bulk/status',
+        body,
+      )
+      return res.data.data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
+  })
+}
+
+export function useImportUsers() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const form = new FormData()
+      form.append('file', file)
+      const res = await apiClient.post<ApiSuccess<ImportReport>>('/users/import', form)
+      return res.data.data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
   })
 }

@@ -1,118 +1,149 @@
-import { useState } from 'react'
-import { Loader2, Save } from 'lucide-react'
-import type { Permission } from '@/shared/api/types'
-import { useRolePermissions, usePermissions, useUpdateRolePermissions } from '@/features/roles/queries'
+import { useMemo, useState } from 'react'
+import { AlertTriangle, Loader2, Lock, Save } from 'lucide-react'
+
+import type { Role } from '@/shared/api/types'
+import {
+  usePermissionMatrix,
+  usePermissions,
+  useRolePermissions,
+  useUpdateRolePermissions,
+} from '@/features/roles/queries'
+import { isRoleLocked } from '../model'
+import { diffSelection } from '../matrix'
+import { PermissionGrid } from './PermissionGrid'
 
 interface PermissionMatrixProps {
   roleId: string
-  roleName: string
+  role?: Role
 }
 
-function groupByModule(permissions: Permission[]) {
-  const map: Record<string, Permission[]> = {}
-  for (const p of permissions) {
-    if (!map[p.module]) map[p.module] = []
-    map[p.module].push(p)
-  }
-  return map
-}
-
-export function PermissionMatrix({ roleId, roleName }: PermissionMatrixProps) {
-  const { data: allPermissions = [], isLoading: loadingAll } = usePermissions()
+export function PermissionMatrix({ roleId, role }: PermissionMatrixProps) {
+  const { data: matrix, isLoading: loadingMatrix } = usePermissionMatrix()
+  const { data: allPermissions = [] } = usePermissions()
   const { data: rolePermissions = [], isLoading: loadingRole } = useRolePermissions(roleId)
   const updateMutation = useUpdateRolePermissions()
 
-  const [selected, setSelected] = useState<Set<string>>(() => new Set())
-  const [initialized, setInitialized] = useState(false)
+  // The grid speaks slugs; the save endpoint speaks ids.
+  const idBySlug = useMemo(() => {
+    const map = new Map<string, string>()
+    allPermissions.forEach((p) => map.set(p.slug, p.id))
+    return map
+  }, [allPermissions])
 
-  // Initialize from fetched data
-  if (!initialized && !loadingRole && rolePermissions.length >= 0) {
-    setSelected(new Set(rolePermissions.map((p) => p.id)))
-    setInitialized(true)
+  const originalSlugs = useMemo(
+    () => new Set(rolePermissions.map((p) => p.slug)),
+    [rolePermissions],
+  )
+
+  const [draft, setDraft] = useState<Set<string> | null>(null)
+  const [loadedFor, setLoadedFor] = useState<string | null>(null)
+
+  // Reset the draft when the selected role changes, otherwise one role's
+  // edits would carry over onto another.
+  if (!loadingRole && loadedFor !== roleId) {
+    setDraft(new Set(originalSlugs))
+    setLoadedFor(roleId)
   }
 
-  const toggle = (id: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
-      } else {
-        next.add(id)
-      }
-      return next
-    })
-  }
+  const granted = draft ?? originalSlugs
+  const locked = role ? isRoleLocked(role) : false
+  const rows = matrix?.rows ?? []
+  const diff = diffSelection(originalSlugs, granted)
 
   const handleSave = () => {
-    updateMutation.mutate({ roleId, permission_ids: Array.from(selected) })
+    // A slug with no id cannot be saved; dropping it silently would revoke a
+    // permission the admin never touched, so keep it out of the diff instead.
+    const ids = [...granted]
+      .map((slug) => idBySlug.get(slug))
+      .filter((id): id is string => Boolean(id))
+    updateMutation.mutate(
+      { roleId, permission_ids: ids },
+      { onSuccess: () => setLoadedFor(null) },
+    )
   }
 
-  const grouped = groupByModule(allPermissions)
-
-  if (loadingAll || loadingRole) {
+  if (loadingMatrix || loadingRole) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-6 w-6 animate-spin text-[#D94F3D]" />
+      <div className="flex items-center gap-2 py-10 text-[13px] text-[#6c6e70]">
+        <Loader2 size={15} className="animate-spin" />
+        Loading permissions…
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-700">
-          Permissions for <span className="text-[#D94F3D]">{roleName}</span>
-        </h3>
-        <button
-          onClick={handleSave}
-          disabled={updateMutation.isPending}
-          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg bg-[#D94F3D] text-white hover:bg-[#C0392B] disabled:opacity-60 transition-colors"
-        >
-          {updateMutation.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Save className="h-4 w-4" />
-          )}
-          Save
-        </button>
-      </div>
-
-      {Object.entries(grouped).map(([module, perms]) => (
-        <div key={module} className="border border-gray-200 rounded-lg overflow-hidden">
-          <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-            <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-              {module}
-            </h4>
-          </div>
-          <div className="divide-y divide-gray-50">
-            {perms.map((p) => (
-              <label
-                key={p.id}
-                className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors"
-              >
-                <input
-                  type="checkbox"
-                  checked={selected.has(p.id)}
-                  onChange={() => toggle(p.id)}
-                  className="h-4 w-4 rounded border-gray-300 text-[#D94F3D] focus:ring-[#D94F3D]"
-                />
-                <div className="flex-1 min-w-0">
-                  <span className="text-sm text-gray-700">{p.name}</span>
-                  <span className="ml-2 text-xs text-gray-400">{p.slug}</span>
-                </div>
-                <span className="text-xs text-gray-400 capitalize">{p.action}</span>
-              </label>
-            ))}
+    <div className="flex flex-col gap-4">
+      {locked && (
+        <div className="flex items-start gap-2.5 rounded-[12px] border border-[#e2e3e3] bg-[#f7f7f8] px-4 py-3">
+          <Lock size={15} className="mt-0.5 shrink-0 text-[#6c6e70]" aria-hidden="true" />
+          <div>
+            <p className="text-[13px] font-medium text-[#1b1c1e]">
+              This is a platform role
+            </p>
+            <p className="mt-0.5 text-[12px] text-[#6c6e70]">
+              Its permissions are fixed so the workspace cannot be locked out of
+              its own administration. Duplicate it to make an editable copy.
+            </p>
           </div>
         </div>
-      ))}
-
-      {allPermissions.length === 0 && (
-        <p className="text-sm text-gray-400 text-center py-6">No permissions found</p>
       )}
 
-      {updateMutation.isSuccess && (
-        <p className="text-xs text-green-600">Permissions saved successfully!</p>
+      <PermissionGrid
+        rows={rows}
+        granted={granted}
+        onChange={setDraft}
+        locked={locked}
+        roleName={role?.name}
+      />
+
+      {!locked && (
+        <div className="flex items-center justify-between rounded-[12px] border border-[#e2e3e3] bg-white px-4 py-3">
+          <p className="text-[12px] text-[#6c6e70]">
+            {diff.dirty ? (
+              <>
+                <span className="font-medium text-[#1b1c1e]">Unsaved changes</span>
+                {' — '}
+                {diff.added.length > 0 && `${diff.added.length} added`}
+                {diff.added.length > 0 && diff.removed.length > 0 && ', '}
+                {diff.removed.length > 0 && `${diff.removed.length} removed`}
+              </>
+            ) : (
+              'No changes to save'
+            )}
+          </p>
+
+          <div className="flex items-center gap-2">
+            {diff.dirty && (
+              <button
+                type="button"
+                onClick={() => setDraft(new Set(originalSlugs))}
+                className="rounded-[10px] border border-[#e2e3e3] bg-transparent px-3 py-1.5 text-[13px] text-[#44474a] transition hover:bg-[#f4f4f4]"
+              >
+                Discard
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={!diff.dirty || updateMutation.isPending}
+              className="btn-primary disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {updateMutation.isPending ? (
+                <Loader2 size={14} className="animate-spin" aria-hidden="true" />
+              ) : (
+                <Save size={14} aria-hidden="true" />
+              )}
+              Save
+            </button>
+          </div>
+        </div>
+      )}
+
+      {updateMutation.isError && (
+        <div className="flex items-center gap-2 rounded-[12px] border border-[#f0d4cd] bg-[#fdf3f1] px-4 py-3 text-[12px] text-[#9c3620]">
+          <AlertTriangle size={14} aria-hidden="true" />
+          Could not save permissions. Nothing was changed.
+        </div>
       )}
     </div>
   )

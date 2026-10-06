@@ -1,16 +1,20 @@
-import { useState } from 'react'
-import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, GripVertical } from 'lucide-react'
+import { useState, useRef, useMemo, useEffect } from 'react'
+import { Plus, Pencil, Trash2, GripVertical, ChevronUp, ChevronDown, Check, AlertCircle, X } from 'lucide-react'
 import type { Menu } from '@/shared/api/types'
-import { useMenus, useDeleteMenu, useUpdateMenu, useUpdateMenuOrder } from '@/features/menus/queries'
+import { useMenus, useDeleteMenu, useUpdateMenu, useReorderMenus } from '@/features/menus/queries'
 import { useRoles } from '@/features/roles/queries'
 import { MenuModal } from './components/MenuModal'
+import { MenuPreview } from './components/MenuPreview'
+import { buildDisplayRows, planReorder } from './ordering'
+import { describeRequirement, setPermissionCatalogue } from './permissions'
+import { usePermissions } from '@/features/roles/queries'
 
 // ── Table styles ────────────────────────────────────────────────────────────
 
 const tableContainerStyle: React.CSSProperties = {
-  background: 'white',
-  border: '1px solid #E5E7EB',
-  borderRadius: 8,
+  background: 'var(--color-card)',
+  border: '1px solid var(--color-border-light)',
+  borderRadius: 14,
   overflow: 'hidden',
   boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
 }
@@ -18,21 +22,22 @@ const tableContainerStyle: React.CSSProperties = {
 const thStyle: React.CSSProperties = {
   padding: '10px 16px',
   textAlign: 'left',
+  fontFamily: "'Geist Mono', monospace",
   fontSize: 11,
-  fontWeight: 600,
-  color: '#6B7280',
+  fontWeight: 500,
+  color: 'var(--color-text-meta)',
   textTransform: 'uppercase',
-  letterSpacing: '0.06em',
-  background: '#F9FAFB',
-  borderBottom: '1px solid #E5E7EB',
+  letterSpacing: '0.08em',
+  background: 'var(--color-card-alt)',
+  borderBottom: '1px solid var(--color-border)',
   whiteSpace: 'nowrap',
 }
 
 const tdStyle: React.CSSProperties = {
   padding: '12px 16px',
-  fontSize: 14,
-  color: '#374151',
-  borderBottom: '1px solid #F3F4F6',
+  fontSize: 13,
+  color: 'var(--color-text-secondary)',
+  borderBottom: '1px solid var(--color-border-light)',
 }
 
 // ── Page ────────────────────────────────────────────────────────────────────
@@ -40,19 +45,27 @@ const tdStyle: React.CSSProperties = {
 export function MenusPage() {
   const { data: menus = [], isLoading } = useMenus()
   const { data: rolesRes } = useRoles(1, 100)
+  // Feeds the form's slug validation and its autocomplete list. Without this
+  // the validator has no catalogue and stays permissive forever.
+  const { data: allPermissions = [] } = usePermissions()
+  useEffect(() => {
+    setPermissionCatalogue(allPermissions.map((p) => p.slug))
+  }, [allPermissions])
   const deleteMenu = useDeleteMenu()
   const updateMenu = useUpdateMenu()
-  const updateMenuOrder = useUpdateMenuOrder()
+  const reorderMenus = useReorderMenus()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editMenu, setEditMenu] = useState<Menu | null>(null)
-  const [page, setPage] = useState(1)
-  const [draggedId, setDraggedId] = useState<string | null>(null)
+  const [previewRole, setPreviewRole] = useState<string | null>(null)
+  const dragIdRef = useRef<string | null>(null)
+  const [dragOverId, setDragOverId] = useState<string | null>(null)
+  const [notice, setNotice] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
 
   const roles = rolesRes?.data ?? []
-  const PAGE_SIZE = 20
-  const totalPages = Math.max(1, Math.ceil(menus.length / PAGE_SIZE))
-  const pagedMenus = menus.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  // Reordering needs the whole sibling group, so the table is never paginated.
+  const rows = useMemo(() => buildDisplayRows(menus), [menus])
+  const isSaving = reorderMenus.isPending
 
   function openCreate() {
     setEditMenu(null)
@@ -74,12 +87,43 @@ export function MenusPage() {
   }
 
   async function handleReorder(dragId: string, dropId: string) {
-    if (dragId === dropId) return
-    const dragged = menus.find((m) => m.id === dragId)
-    const target = menus.find((m) => m.id === dropId)
-    if (!dragged || !target) return
-    await updateMenuOrder.mutateAsync({ id: dragId, order_index: target.order_index })
-    await updateMenuOrder.mutateAsync({ id: dropId, order_index: dragged.order_index })
+    const plan = planReorder(menus, dragId, dropId)
+    if (!plan.ok) {
+      if (plan.reason === 'cross-parent') {
+        setNotice({
+          kind: 'error',
+          text: 'Dragging only reorders menus within the same parent. To change the parent, use Edit → Parent Menu.',
+        })
+      }
+      return
+    }
+    setNotice(null)
+    try {
+      await reorderMenus.mutateAsync({ parent_id: plan.parentId, menu_ids: plan.menuIds })
+      setNotice({ kind: 'success', text: 'Menu order saved.' })
+    } catch {
+      setNotice({ kind: 'error', text: 'Could not save the menu order. Please try again.' })
+    }
+  }
+
+  /** Keyboard/touch-accessible alternative to dragging. */
+  async function moveBy(menu: Menu, direction: -1 | 1) {
+    const siblings = menus
+      .filter((m) => (m.parent_id ?? null) === (menu.parent_id ?? null))
+      .sort((a, b) => a.order_index - b.order_index || a.id.localeCompare(b.id))
+    const index = siblings.findIndex((m) => m.id === menu.id)
+    const target = siblings[index + direction]
+    if (!target) return
+    await handleReorder(menu.id, target.id)
+  }
+
+  /** True when the menu already sits at the edge of its sibling group. */
+  function isAtEdge(menu: Menu, direction: -1 | 1): boolean {
+    const siblings = menus
+      .filter((m) => (m.parent_id ?? null) === (menu.parent_id ?? null))
+      .sort((a, b) => a.order_index - b.order_index || a.id.localeCompare(b.id))
+    const index = siblings.findIndex((m) => m.id === menu.id)
+    return siblings[index + direction] === undefined
   }
 
   return (
@@ -87,8 +131,8 @@ export function MenusPage() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1A1A1A', marginBottom: 2 }}>Menu Management</h1>
-          <p style={{ fontSize: 13, color: '#6B7280' }}>Manage navigation menus and their role assignments</p>
+          {/* Heading lives on the Admin Console tab; repeating it here duplicated the label. */}
+          <p style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>Manage navigation menus and their role assignments</p>
         </div>
         <button
           onClick={openCreate}
@@ -99,16 +143,74 @@ export function MenusPage() {
         </button>
       </div>
 
+      {/* Save status */}
+      {(notice || isSaving) && (
+        <div
+          role="status"
+          data-testid="menu-reorder-status"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '10px 14px',
+            borderRadius: 10,
+            fontSize: 13,
+            border: '1px solid',
+            borderColor: notice?.kind === 'error'
+              ? '#f5cec5'
+              : notice?.kind === 'success' ? '#cbe5d8' : 'var(--color-border-light)',
+            background: notice?.kind === 'error'
+              ? 'var(--color-primary-light)'
+              : notice?.kind === 'success' ? 'var(--color-success-bg)' : 'var(--color-card-alt)',
+            color: notice?.kind === 'error'
+              ? 'var(--color-primary)'
+              : notice?.kind === 'success' ? '#1f7d52' : 'var(--color-text-secondary)',
+          }}
+        >
+          {!isSaving && notice?.kind === 'success' && <Check size={14} style={{ flexShrink: 0 }} />}
+          {!isSaving && notice?.kind === 'error' && <AlertCircle size={14} style={{ flexShrink: 0 }} />}
+          <span style={{ flex: 1 }}>{isSaving ? 'Saving order…' : notice?.text}</span>
+          {!isSaving && notice && (
+            <button
+              type="button"
+              aria-label="Dismiss message"
+              onClick={() => setNotice(null)}
+              style={{
+                border: 'none',
+                background: 'transparent',
+                cursor: 'pointer',
+                color: 'inherit',
+                opacity: 0.7,
+                display: 'flex',
+                padding: 2,
+              }}
+            >
+              <X size={13} />
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Preview — the table shows rules, this shows the result */}
+      <MenuPreview
+        roles={roles.map((r) => ({ id: r.id, slug: r.slug, name: r.name }))}
+        roleSlug={previewRole}
+        onChange={setPreviewRole}
+      />
+
       {/* Table */}
       <div style={tableContainerStyle}>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '100%' }}>
             <thead>
               <tr>
-                <th style={{ ...thStyle, width: 36, padding: '10px 8px' }}></th>
+                <th style={{ ...thStyle, width: 76, padding: '10px 8px' }} scope="col">
+                  <span className="sr-only">Order</span>
+                </th>
                 <th style={thStyle}>Label</th>
                 <th style={thStyle}>Icon</th>
                 <th style={thStyle}>Path</th>
+                <th style={thStyle}>Visibility</th>
                 <th style={thStyle}>Parent</th>
                 <th style={thStyle}>Status</th>
                 <th style={thStyle}>Roles</th>
@@ -126,64 +228,144 @@ export function MenusPage() {
                     ))}
                   </tr>
                 ))
-              ) : pagedMenus.length === 0 ? (
+              ) : rows.length === 0 ? (
                 <tr>
                   <td colSpan={8} style={{ ...tdStyle, padding: '48px 16px', textAlign: 'center', color: '#9CA3AF' }}>
                     No menus found
                   </td>
                 </tr>
               ) : (
-                pagedMenus.map((menu) => {
+                rows.map(({ menu, depth }) => {
                   const parentLabel = menu.parent_id
                     ? menus.find((m) => m.id === menu.parent_id)?.label
                     : null
                   const menuRoles = menu.roles ?? []
-                  const isDraggingOver = draggedId !== null && draggedId !== menu.id
+                  const isDraggingOver = dragOverId === menu.id
 
                   return (
                     <tr
                       key={menu.id}
+                      data-menu-id={menu.id}
                       style={{
                         transition: 'background 100ms',
-                        background: isDraggingOver ? '#F0FDF4' : undefined,
-                        outline: isDraggingOver ? '2px dashed #10B981' : undefined,
+                        background: isDraggingOver ? 'var(--color-primary-light)' : undefined,
+                        outline: isDraggingOver ? '2px dashed var(--color-primary)' : undefined,
                         outlineOffset: -2,
                       }}
-                      onDragOver={(e) => { e.preventDefault() }}
+                      onDragOver={(e) => { e.preventDefault(); if (dragOverId !== menu.id) setDragOverId(menu.id) }}
+                      onDragLeave={(e) => {
+                        // Hanya clear jika benar-benar keluar dari row (bukan masuk ke child)
+                        if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverId(null)
+                      }}
                       onDrop={(e) => {
                         e.preventDefault()
-                        const fromId = e.dataTransfer.getData('text/plain')
-                        if (fromId) handleReorder(fromId, menu.id)
-                        setDraggedId(null)
+                        const fromId = dragIdRef.current
+                        setDragOverId(null)
+                        dragIdRef.current = null
+                        if (fromId && fromId !== menu.id) handleReorder(fromId, menu.id)
                       }}
                       onMouseEnter={(e) => {
-                        if (!draggedId) (e.currentTarget as HTMLElement).style.background = '#F9FAFB'
+                        if (!dragOverId) (e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.02)'
                       }}
                       onMouseLeave={(e) => {
-                        if (!draggedId) (e.currentTarget as HTMLElement).style.background = ''
+                        if (!dragOverId) (e.currentTarget as HTMLElement).style.background = ''
                       }}
                     >
                       {/* Drag handle */}
-                      <td style={{ ...tdStyle, padding: '12px 8px', width: 36 }}>
-                        <div
-                          draggable
-                          onDragStart={(e) => {
-                            e.dataTransfer.setData('text/plain', menu.id)
-                            setDraggedId(menu.id)
-                          }}
-                          onDragEnd={() => setDraggedId(null)}
-                          style={{ cursor: 'grab', color: '#D1D5DB', padding: '0 4px', display: 'flex', alignItems: 'center' }}
-                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#6B7280' }}
-                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#D1D5DB' }}
-                        >
-                          <GripVertical size={16} />
+                      <td style={{ ...tdStyle, padding: '12px 8px', width: 76 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <button
+                            type="button"
+                            draggable
+                            aria-label={`Reorder ${menu.label}`}
+                            data-testid="menu-drag-handle"
+                            disabled={isSaving}
+                            onDragStart={(e) => {
+                              dragIdRef.current = menu.id
+                              e.dataTransfer.effectAllowed = 'move'
+                              e.dataTransfer.setData('text/plain', menu.id)
+                            }}
+                            onDragEnd={() => { dragIdRef.current = null; setDragOverId(null) }}
+                            onPointerDown={(e) => {
+                              // Pointer-driven drag so touch devices work too.
+                              if (e.pointerType === 'mouse' && e.button !== 0) return
+                              dragIdRef.current = menu.id
+                            }}
+                            onPointerMove={(e) => {
+                              if (dragIdRef.current !== menu.id) return
+                              const over = document
+                                .elementFromPoint(e.clientX, e.clientY)
+                                ?.closest('tr[data-menu-id]') as HTMLElement | null
+                              setDragOverId(over?.dataset.menuId ?? null)
+                            }}
+                            onPointerUp={(e) => {
+                              const fromId = dragIdRef.current
+                              dragIdRef.current = null
+                              const over = document
+                                .elementFromPoint(e.clientX, e.clientY)
+                                ?.closest('tr[data-menu-id]') as HTMLElement | null
+                              const dropId = over?.dataset.menuId
+                              setDragOverId(null)
+                              if (fromId && dropId && fromId !== dropId) handleReorder(fromId, dropId)
+                            }}
+                            style={{
+                              cursor: isSaving ? 'progress' : 'grab',
+                              color: '#D1D5DB',
+                              padding: '0 2px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              background: 'transparent',
+                              border: 'none',
+                              touchAction: 'none',
+                            }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#6B7280' }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#D1D5DB' }}
+                          >
+                            <GripVertical size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            aria-label={`Move ${menu.label} up`}
+                            disabled={isSaving || isAtEdge(menu, -1)}
+                            onClick={() => moveBy(menu, -1)}
+                            style={{
+                              border: 'none',
+                              background: 'transparent',
+                              cursor: isSaving || isAtEdge(menu, -1) ? 'not-allowed' : 'pointer',
+                              opacity: isAtEdge(menu, -1) ? 0.3 : 1,
+                              color: 'var(--color-text-placeholder)',
+                              display: 'flex',
+                              padding: 3,
+                              borderRadius: 6,
+                            }}
+                          >
+                            <ChevronUp size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            aria-label={`Move ${menu.label} down`}
+                            disabled={isSaving || isAtEdge(menu, 1)}
+                            onClick={() => moveBy(menu, 1)}
+                            style={{
+                              border: 'none',
+                              background: 'transparent',
+                              cursor: isSaving || isAtEdge(menu, 1) ? 'not-allowed' : 'pointer',
+                              opacity: isAtEdge(menu, 1) ? 0.3 : 1,
+                              color: 'var(--color-text-placeholder)',
+                              display: 'flex',
+                              padding: 3,
+                              borderRadius: 6,
+                            }}
+                          >
+                            <ChevronDown size={13} />
+                          </button>
                         </div>
                       </td>
 
                       {/* Label */}
                       <td style={tdStyle}>
-                        <span style={{ fontWeight: 500, color: '#1A1A1A' }}>
-                          {parentLabel ? '↳ ' : ''}{menu.label}
+                        <span style={{ fontWeight: 500, color: '#1A1A1A', paddingLeft: depth * 20 }}>
+                          {depth > 0 ? '↳ ' : ''}{menu.label}
                         </span>
                       </td>
 
@@ -199,6 +381,21 @@ export function MenusPage() {
                         <code style={{ fontSize: 12, color: '#6B7280', background: '#F9FAFB', padding: '2px 6px', borderRadius: 4, border: '1px solid #E5E7EB' }}>
                           {menu.path ?? '—'}
                         </code>
+                      </td>
+
+                      {/* Visibility — which permission gates this item */}
+                      <td style={tdStyle}>
+                        {menu.required_permission ? (
+                          <code
+                            data-testid={`menu-perm-${menu.id}`}
+                            title={describeRequirement(menu.required_permission)}
+                            style={{ fontSize: 12, color: '#44474a', background: '#f4f4f4', padding: '2px 6px', borderRadius: 4, border: '1px solid #e2e3e3' }}
+                          >
+                            {menu.required_permission}
+                          </code>
+                        ) : (
+                          <span style={{ fontSize: 12, color: '#8a8c8e' }}>Everyone</span>
+                        )}
                       </td>
 
                       {/* Parent */}
@@ -258,8 +455,8 @@ export function MenusPage() {
                                   borderRadius: 9999,
                                   fontSize: 11,
                                   fontWeight: 500,
-                                  background: '#FFF5F3',
-                                  color: '#D94F3D',
+                                  background: 'var(--color-primary-light)',
+                                  color: 'var(--color-primary)',
                                 }}
                               >
                                 {r.name}
@@ -275,18 +472,20 @@ export function MenusPage() {
                           <button
                             onClick={() => openEdit(menu)}
                             title="Edit"
-                            style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', transition: 'color 150ms, background 150ms' }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; (e.currentTarget as HTMLElement).style.color = '#D94F3D' }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
+                            aria-label={`Edit ${menu.label}`}
+                            style={{ padding: 6, borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex', transition: 'color 150ms, background 150ms' }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--color-card-alt)'; (e.currentTarget as HTMLElement).style.color = 'var(--color-text-primary)' }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--color-text-muted)' }}
                           >
                             <Pencil size={14} />
                           </button>
                           <button
                             onClick={() => handleDelete(menu.id, menu.label)}
                             title="Delete"
-                            style={{ padding: 6, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: '#9CA3AF', display: 'flex', transition: 'color 150ms, background 150ms' }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FEF2F2'; (e.currentTarget as HTMLElement).style.color = '#EF4444' }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF' }}
+                            aria-label={`Delete ${menu.label}`}
+                            style={{ padding: 6, borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex', transition: 'color 150ms, background 150ms' }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-light)'; (e.currentTarget as HTMLElement).style.color = 'var(--color-primary)' }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--color-text-muted)' }}
                           >
                             <Trash2 size={14} />
                           </button>
@@ -301,30 +500,9 @@ export function MenusPage() {
         </div>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
-          <p style={{ fontSize: 12, color: '#9CA3AF' }}>
-            Page {page} of {totalPages} — {menus.length} total
-          </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              style={{ padding: 6, borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1, display: 'flex' }}
-            >
-              <ChevronLeft size={14} />
-            </button>
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page >= totalPages}
-              style={{ padding: 6, borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', cursor: page >= totalPages ? 'not-allowed' : 'pointer', opacity: page >= totalPages ? 0.4 : 1, display: 'flex' }}
-            >
-              <ChevronRight size={14} />
-            </button>
-          </div>
-        </div>
-      )}
+      <p style={{ fontSize: 12, color: '#9CA3AF', padding: '0 4px' }}>
+        {menus.length} menus — drag the handle or use the arrow buttons to reorder.
+      </p>
 
       {/* Modal */}
       <MenuModal

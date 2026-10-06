@@ -24,6 +24,21 @@ export function useMyMenu() {
   })
 }
 
+export function useMenuPreview(roleSlug: string | null) {
+  return useQuery({
+    // Role is part of the key, otherwise switching roles shows the cached
+    // tree of the previous one.
+    queryKey: ['menus', 'preview', roleSlug],
+    enabled: Boolean(roleSlug),
+    queryFn: async () => {
+      const res = await apiClient.get<ApiSuccess<MenuTree[]>>('/menus/my-menu', {
+        params: { preview_role: roleSlug },
+      })
+      return res.data.data
+    },
+  })
+}
+
 // ── Mutations ──────────────────────────────────────────────────────────────
 
 interface MenuPayload {
@@ -85,11 +100,33 @@ export function useUpdateMenuOrder() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, order_index }: { id: string; order_index: number }) => {
-      const res = await apiClient.put<ApiSuccess<Menu>>(`/menus/${id}`, {
+      const res = await apiClient.put<ApiSuccess<Menu>>(`/menus/${id}/order`, {
         order_index,
       })
       return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['menus'] }),
+  })
+}
+
+/** Atomically reorder one complete sibling group in a single request. */
+export function useReorderMenus() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      parent_id,
+      menu_ids,
+    }: {
+      parent_id: string | null
+      menu_ids: string[]
+    }) => {
+      const res = await apiClient.put<ApiSuccess<Menu[]>>('/menus/reorder', {
+        parent_id,
+        menu_ids,
+      })
+      return res.data.data
+    },
+    // Refresh the management table AND the sidebar, which reads my-menu.
+    onSettled: () => qc.invalidateQueries({ queryKey: ['menus'] }),
   })
 }

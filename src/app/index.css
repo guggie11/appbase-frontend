@@ -1,243 +1,204 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 :root {
-  /* Primary */
-  --color-primary: #D94F3D;
-  --color-primary-hover: #C0392B;
-  --color-primary-light: #FFF5F3;
-
-  /* Backgrounds */
-  --color-bg: #F5F5F5;
-  --color-sidebar: #FFFFFF;
-  --color-card: #FFFFFF;
-  --color-surface: #FAFAFA;
-
-  /* Text */
-  --color-text-primary: #1A1A1A;
-  --color-text-secondary: #6B7280;
-  --color-text-muted: #9CA3AF;
-  --color-text-label: #374151;
-
-  /* Borders */
-  --color-border: #E5E7EB;
-  --color-border-light: #F3F4F6;
-
-  /* Status */
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-error: #EF4444;
-  --color-info: #6B8CAE;
-
-  /* Status backgrounds */
-  --color-success-bg: #ECFDF5;
-  --color-warning-bg: #FFFBEB;
-  --color-error-bg: #FEF2F2;
-
-  /* Chat */
-  --color-chat-user-bg: #1A1A1A;
-  --color-chat-ai-bg: #F3F4F6;
-
-  /* Shadows */
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.07), 0 4px 6px -2px rgba(0,0,0,0.03);
-
-  /* Radius */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-pill: 9999px;
-
-  /* Sidebar */
-  --sidebar-width: 220px;
-  --sidebar-collapsed-width: 64px;
+  --color-primary: #d8452a;
+  --color-primary-hover: #c0402a;
+  --color-primary-light: #fdece8;
+  --color-bg: #e9eaea;
+  --color-sidebar: #f4f4f4;
+  --color-card: #ffffff;
+  --color-card-alt: #f4f4f4;
+  --color-border: #dcdddd;
+  --color-border-light: #e2e3e3;
+  --color-text-primary: #1b1c1e;
+  --color-text-secondary: #4a4c4e;
+  --color-text-muted: #6c6e70;
+  --color-text-meta: #8a8c8e;
+  --color-text-placeholder: #a3a5a7;
+  --color-success: #2e9e6b;
+  --color-success-bg: #e8f4ed;
+  --color-warning-bg: #fbf3dd;
+  --color-error-bg: #fdece8;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-nav: 0 1px 3px rgba(0,0,0,0.08);
+  --radius-card: 14px;
+  --radius-nav: 14px;
+  --radius-btn: 12px;
+  --radius-logo: 8px;
+  --radius-pill: 999px;
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
+/* The universal reset MUST stay inside @layer base. Unlayered rules beat every
+   Tailwind utility, which silently collapses padding and margin classes to 0
+   app-wide. */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 }
 
 html, body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Geist', Helvetica, Arial, sans-serif;
   font-size: 14px;
   background-color: var(--color-bg);
   color: var(--color-text-primary);
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Utility Classes ────────────────────────────────────────────── */
+/* ── Section labels — Geist Mono ────────────────────────────────── */
+
+/* Visually hidden, still announced by screen readers. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 .section-label {
-  font-size: 10px;
-  font-weight: 600;
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #9CA3AF;
+  letter-spacing: 0.1em;
+  color: var(--color-text-meta);
 }
 
-.card-label {
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--color-text-secondary);
-}
-
-.metric-number {
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1.1;
-  color: var(--color-text-primary);
-}
+/* ── Cards ──────────────────────────────────────────────────────── */
 
 .card {
   background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-card);
   padding: 20px;
+  box-shadow: var(--shadow-card);
 }
 
-/* Status Badges */
+/* ── Metric number ──────────────────────────────────────────────── */
+
+.metric-number {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────── */
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-btn);
+  padding: 10px 16px;
+  font-family: 'Geist', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 150ms;
+  white-space: nowrap;
+}
+.btn-primary:hover { background: var(--color-primary-hover); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-btn);
+  padding: 8px 14px;
+  font-family: 'Geist', Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 150ms;
+}
+.btn-ghost:hover { background: rgba(0,0,0,0.04); }
+
+/* ── Status badges ──────────────────────────────────────────────── */
+
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 10px;
+  padding: 2px 8px;
   border-radius: var(--radius-pill);
   font-size: 12px;
   font-weight: 500;
 }
 
-.badge-active {
-  background: #ECFDF5;
-  color: #059669;
-}
+.badge-active  { background: var(--color-success-bg); color: #1f7d52; }
+.badge-pending { background: var(--color-warning-bg); color: #96731a; }
+.badge-inactive { background: #f0f0f0; color: var(--color-text-muted); }
+.badge-suspended { background: var(--color-error-bg); color: var(--color-primary); }
 
-.badge-pending {
-  background: #FFFBEB;
-  color: #D97706;
-}
+/* ── Form inputs ────────────────────────────────────────────────── */
 
-.badge-inactive {
-  background: #F3F4F6;
-  color: #6B7280;
-}
-
-.badge-suspended {
-  background: #FEF2F2;
-  color: #DC2626;
-}
-
-/* Primary Button */
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: var(--color-primary);
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  border: none;
-  cursor: pointer;
-  transition: background 150ms;
-}
-
-.btn-primary:hover {
-  background: var(--color-primary-hover);
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Ghost Button */
-.btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: white;
-  border: 1px solid var(--color-border);
-  color: var(--color-text-label);
-  font-size: 14px;
-  font-weight: 500;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: background 150ms;
-}
-
-.btn-ghost:hover {
-  background: #F9FAFB;
-}
-
-/* Form inputs */
 .form-input {
   width: 100%;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: 8px 12px;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-family: 'Geist', Helvetica, Arial, sans-serif;
   font-size: 14px;
   color: var(--color-text-primary);
-  background: white;
+  background: #fff;
   outline: none;
   transition: border-color 150ms, box-shadow 150ms;
 }
-
-.form-input::placeholder {
-  color: var(--color-text-muted);
-}
-
+.form-input::placeholder { color: var(--color-text-placeholder); }
 .form-input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(217, 79, 61, 0.1);
+  box-shadow: 0 0 0 3px rgba(216,69,42,0.1);
 }
 
-/* Table */
-.archie-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
+/* ── Tables ─────────────────────────────────────────────────────── */
 
-.archie-table thead {
-  background: #F9FAFB;
-}
-
-.archie-table th {
+.archie-table { width: 100%; border-collapse: collapse; }
+.archie-table thead tr { background: var(--color-card-alt); border-bottom: 1px solid var(--color-border); }
+.archie-table thead th {
+  padding: 10px 16px;
   text-align: left;
-  padding: 12px 16px;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #6B7280;
+  letter-spacing: 0.08em;
+  color: var(--color-text-meta);
   white-space: nowrap;
 }
+.archie-table tbody tr { border-bottom: 1px solid var(--color-border-light); transition: background 100ms; }
+.archie-table tbody tr:hover { background: rgba(0,0,0,0.02); }
+.archie-table tbody td { padding: 12px 16px; font-size: 13px; color: var(--color-text-secondary); }
 
-.archie-table td {
-  padding: 12px 16px;
-  color: #374151;
-  border-bottom: 1px solid #F3F4F6;
-}
+/* ── Alert card ─────────────────────────────────────────────────── */
 
-.archie-table tbody tr:hover {
-  background: #F9FAFB;
-}
-
-/* Alert Card */
 .alert-card {
-  background: #FFF5F3;
+  background: var(--color-error-bg);
+  border: 1px solid #f5cec5;
   border-left: 4px solid var(--color-primary);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-card);
   padding: 16px 20px;
 }
 
-/* Spinner */
+/* ── Spinner ────────────────────────────────────────────────────── */
+
 .spinner {
   width: 20px;
   height: 20px;
@@ -249,11 +210,4 @@ html, body {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-/* Sidebar nav active state */
-.nav-item-active {
-  background: #F3F4F6;
-  border-left: 3px solid var(--color-primary);
-  color: var(--color-primary);
 }

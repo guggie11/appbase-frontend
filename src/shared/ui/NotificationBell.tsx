@@ -85,7 +85,7 @@ export function NotificationBell() {
               position: 'absolute',
               top: 0,
               right: 0,
-              background: '#D94F3D',
+              background: 'var(--color-primary)',
               color: 'white',
               fontSize: 10,
               fontWeight: 700,
@@ -135,7 +135,7 @@ export function NotificationBell() {
               onClick={() => markAllRead.mutate()}
               style={{
                 fontSize: 12,
-                color: '#D94F3D',
+                color: 'var(--color-primary)',
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
@@ -195,12 +195,12 @@ export function NotificationBell() {
                     display: 'flex',
                     gap: 10,
                     alignItems: 'flex-start',
-                    background: n.is_read ? '#FFFFFF' : '#FFF5F3',
+                    background: n.is_read ? '#FFFFFF' : 'var(--color-primary-light)',
                     cursor: 'pointer',
                     transition: 'background 150ms',
                   }}
                   onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#F9FAFB' }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = n.is_read ? '#FFFFFF' : '#FFF5F3' }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = n.is_read ? '#FFFFFF' : 'var(--color-primary-light)' }}
                 >
                   <NotifIcon type={n.type} />
                   <div style={{ flex: 1, minWidth: 0 }}>

@@ -1,6 +1,7 @@
 import { apiClient } from '@/shared/api/client'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { ApiSuccess, PaginatedResponse, Role, Permission } from '@/shared/api/types'
+import type { MatrixAction, MatrixRow } from '@/pages/roles/matrix'
 
 export function useRoles(page = 1, per_page = 10) {
   return useQuery({
@@ -8,6 +9,22 @@ export function useRoles(page = 1, per_page = 10) {
     queryFn: async () => {
       const res = await apiClient.get<PaginatedResponse<Role>>(`/roles?page=${page}&per_page=${per_page}`)
       return res.data
+    },
+  })
+}
+
+/**
+ * The RESOURCE x ACTION grid. Served from the live catalogue, so a module
+ * added on the backend shows up here without a frontend change.
+ */
+export function usePermissionMatrix() {
+  return useQuery({
+    queryKey: ['permission-matrix'],
+    queryFn: async () => {
+      const res = await apiClient.get<ApiSuccess<{ actions: MatrixAction[]; rows: MatrixRow[] }>>(
+        '/permissions/matrix',
+      )
+      return res.data.data
     },
   })
 }
@@ -47,6 +64,19 @@ export function useUpdateRole() {
       is_active?: boolean
     }) => {
       const res = await apiClient.put<ApiSuccess<Role>>(`/roles/${id}`, data)
+      return res.data.data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['roles'] }),
+  })
+}
+
+export function useDuplicateRole() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      // The backend copies every permission across; the copy always comes
+      // back as a custom role so it does not inherit the platform lock.
+      const res = await apiClient.post<ApiSuccess<Role>>(`/roles/${id}/duplicate`, { name })
       return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['roles'] }),
@@ -93,7 +123,11 @@ export function usePermissions() {
   return useQuery({
     queryKey: ['permissions'],
     queryFn: async () => {
-      const res = await apiClient.get<ApiSuccess<Permission[]>>('/permissions')
+      // Trailing slash avoids a 307. The envelope is now consistent with
+      // every other endpoint — see appbase-backend: this route used to
+      // return a bare array, so res.data.data was undefined and the matrix
+      // silently rendered "0 / 0".
+      const res = await apiClient.get<ApiSuccess<Permission[]>>('/permissions/')
       return res.data.data
     },
   })

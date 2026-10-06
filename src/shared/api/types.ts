@@ -24,6 +24,9 @@ export interface UserDetail extends User {
   is_verified: boolean
   last_login_at: string | null
   created_at: string
+  roles?: Array<{ id: string; name: string; slug: string }>
+  /** Flat permission slugs from /auth/me, e.g. "users.read". */
+  permissions?: string[]
 }
 
 export interface TokenData {
@@ -39,6 +42,10 @@ export interface Role {
   description: string | null
   is_system: boolean
   is_active: boolean
+  /** platform | built-in | custom — drives the badge and the edit lock. */
+  kind?: string
+  /** How many users hold this role. */
+  user_count?: number
 }
 
 export interface Permission {
@@ -47,6 +54,12 @@ export interface Permission {
   slug: string
   module: string
   action: string
+  /** Plain sentence explaining what ticking this allows. */
+  description?: string | null
+  /** Section of the matrix this row belongs to. */
+  group?: string | null
+  /** Destructive — surfaced in red so it is not ticked casually. */
+  is_dangerous?: boolean
 }
 
 export interface UserWithRoles extends User {
@@ -75,6 +88,8 @@ export interface Menu {
   parent_id: string | null
   order_index: number
   is_active: boolean
+  /** Permission slug needed to see this item; null means public. */
+  required_permission?: string | null
   roles?: Role[]
   children: MenuTree[]
 }
