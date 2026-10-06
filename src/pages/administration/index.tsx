@@ -4,13 +4,15 @@ import { UsersPage } from '@/pages/users'
 import { RolesPage } from '@/pages/roles'
 import { MenusPage } from '@/pages/menus'
 import { SettingsPage } from '@/pages/settings'
+import { AppearancePage } from '@/pages/appearance'
 import { ADMIN_TABS, resolveTab } from './tabs'
 
 const PANELS: Record<string, () => React.ReactElement> = {
   users: UsersPage,
   roles: RolesPage,
   menus: MenusPage,
-  appearance: SettingsPage,
+  appearance: AppearancePage,
+  settings: SettingsPage,
 }
 
 export function AdministrationPage() {
@@ -21,12 +23,14 @@ export function AdministrationPage() {
   const canRoles = usePermission('roles.read')
   const canMenus = usePermission('menu.read')
   const canAppearance = usePermission('settings.read')
+  const canSettings = usePermission('settings.read')
 
   const allowed: Record<string, boolean> = {
     users: canUsers,
     roles: canRoles,
     menus: canMenus,
     appearance: canAppearance,
+    settings: canSettings,
   }
 
   const permitted = ADMIN_TABS.filter((t) => allowed[t.id]).map((t) => t.id)
