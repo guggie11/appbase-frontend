@@ -70,6 +70,37 @@ export interface UserWithRoles extends User {
   created_at: string
 }
 
+export interface CategoryGroup {
+  id: string
+  code: string
+  name: string
+  description: string | null
+  icon: string | null
+  color: string | null
+  is_system: boolean
+  is_active: boolean
+  category_count: number
+  created_at: string
+  updated_at: string
+}
+
+export interface Category {
+  id: string
+  group_id: string
+  parent_id: string | null
+  code: string
+  name: string
+  description: string | null
+  icon: string | null
+  color: string | null
+  order_index: number
+  is_system: boolean
+  status: 'active' | 'deprecated'
+  deprecated_reason: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface PaginatedResponse<T> {
   data: T[]
   meta: {
