@@ -137,6 +137,22 @@ export const router = createBrowserRouter([
       }
     },
   },
+  {
+    // Reference data other features point at.
+    path: '/categories',
+    lazy: async () => {
+      const { CategoriesPage } = await import('../pages/categories')
+      return {
+        Component: () => (
+          <WithLayout>
+            <PermissionRoute permission="category.read">
+              <CategoriesPage />
+            </PermissionRoute>
+          </WithLayout>
+        ),
+      }
+    },
+  },
   // Pre-console routes stay alive as redirects so old bookmarks and links
   // do not break.
   { path: '/users', element: <Navigate to="/administration?tab=users" replace /> },

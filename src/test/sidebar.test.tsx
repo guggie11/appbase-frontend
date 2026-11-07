@@ -81,6 +81,34 @@ describe('Sidebar collapse control', () => {
   })
 })
 
+describe('Collapsed rail alignment', () => {
+  it('centres the brand row when collapsed', async () => {
+    renderSidebar()
+    await userEvent.click(screen.getByRole('button', { name: /collapse sidebar/i }))
+
+    const brand = document.querySelector('[data-testid="sidebar-brand"]') as HTMLElement
+    expect(brand).toBeTruthy()
+    // Left-aligned content in a 84px rail leaves the logo ~27px off-axis
+    // while every nav icon below it sits centred.
+    expect(brand.style.justifyContent).toBe('center')
+  })
+
+  it('drops the brand row side padding when collapsed', async () => {
+    renderSidebar()
+    await userEvent.click(screen.getByRole('button', { name: /collapse sidebar/i }))
+
+    const brand = document.querySelector('[data-testid="sidebar-brand"]') as HTMLElement
+    // Asymmetric padding shifts the optical centre even when centred.
+    expect(brand.style.padding).toBe('6px 0px')
+  })
+
+  it('keeps the brand row left-aligned when expanded', async () => {
+    renderSidebar()
+    const brand = document.querySelector('[data-testid="sidebar-brand"]') as HTMLElement
+    expect(brand.style.justifyContent).toBe('space-between')
+  })
+})
+
 describe('Sidebar Archie v4 spec', () => {
   it('elevates only the active item, never its parent', async () => {
     renderSidebar('/users')

@@ -363,16 +363,28 @@ export function Sidebar() {
     >
       {/* ── Header: logo + inline collapse toggle (Archie puts it here) ── */}
       <div
+        data-testid="sidebar-brand"
         style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 12,
+          // Collapsed, the row holds only the logo, so it must sit on the
+          // same axis as the nav icons below. Left-aligning it in the 84px
+          // rail pushed the mark ~27px off that axis.
+          justifyContent: collapsed ? 'center' : 'space-between',
+          gap: collapsed ? 0 : 12,
           // Align the brand row with the nav column (navPadX 14).
           padding: collapsed ? '6px 0' : '6px 14px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            gap: collapsed ? 0 : 12,
+            minWidth: 0,
+          }}
+        >
           {/* Logo circle */}
           {logoUrl ? (
             <img
